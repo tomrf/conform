@@ -1,0 +1,15 @@
+{
+    "name": "tomrf/torm",
+    "description": "PDO ORM",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Tomrf\\Snek\\": "src/",
+            "Model\\": "model/"
+        }
+    },
+    "minimum-stability": "stable",
+    "require": {
+    }
+}
