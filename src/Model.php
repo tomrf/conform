@@ -3,6 +3,7 @@
 namespace Tomrf\Snek;
 
 use Exception;
+use RuntimeException;
 
 abstract class Model
 {
@@ -14,8 +15,12 @@ abstract class Model
     protected array $data = [];
     protected array $dirty = [];
 
-    public function __construct(Row|array $data = [])
+    protected ?Connection $connection = null;
+
+    public function __construct(Row|array $data = [], ?Connection $connection = null)
     {
+        $this->connection = $connection;
+
         foreach ($data as $key => $value) {
             $this->data[$key] = $value;
         }
@@ -106,7 +111,7 @@ abstract class Model
         $valueType = gettype($value);
         $columnType = $this->columns[$column]['type'] ?? null;
 
-        if ($valueType !== $columnType) {
+        if ($columnType !== null && $valueType !== $columnType) {
             throw new Exception(sprintf(
                 'Illegal type "%s" (expected "%s") for column "%s" in table "%s"',
                 $valueType,
@@ -139,6 +144,10 @@ abstract class Model
 
     public function save(): bool
     {
+        if ($this->getPrimaryKey() === null) {
+            throw new RuntimeException('Cannot save Model: primaryKey is row data is NULL');
+        }
+
         if (!$this->isDirty()) {
             return true;
         }
@@ -189,13 +198,11 @@ abstract class Model
     public function __get(mixed $name): mixed
     {
         throw new Exception('Access violation directly getting arbitrary property from Model');
-        // return $this->get($name);
     }
 
     public function __set(mixed $name, mixed $value): void
     {
         throw new Exception('Access violation directly setting arbitrary property on Model');
-        // $this->set($name, $value);
     }
 
 }

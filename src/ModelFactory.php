@@ -5,19 +5,11 @@ namespace Tomrf\Snek;
 class ModelFactory
 {
     public function __construct(
-        private Connection $connection
+        private ?Connection $connection = null
     ) {}
 
-    public function make(Row $row, string $class): Model
+    public function make(string $class, Row $row): Model
     {
-        return new $class($row);
-    }
-
-    public function fetch(string $modelClass, mixed $primaryKeyValue): Model
-    {
-        $table = $this->connection->getTableForClass($modelClass);
-        $row = $this->connection->forTable($table)->where('id', $primaryKeyValue)->findOne();
-        \var_dump($row);
-        die();
+        return new $class($row, $this->connection);
     }
 }

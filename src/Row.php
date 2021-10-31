@@ -2,23 +2,25 @@
 
 namespace Tomrf\Snek;
 
-use ArrayObject;
-use Exception;
+use RuntimeException;
 
-class Row extends ArrayObject
+class Row extends ImmutableArrayObject
 {
-    public function offsetSet(mixed $key, mixed $value): void
+    public function toArray(): array
     {
-        $this->accessViolation();
+        return (array) $this;
     }
 
-    public function offsetUnset(mixed $key): void
+    public function toJson(): string
     {
-        $this->accessViolation();
+        return \json_encode($this->toArray(), \JSON_THROW_ON_ERROR);
     }
 
-    private function accessViolation(): void
+    public function __get($name)
     {
-        throw new Exception('Access violation modifying immutable Row');
+        if (!isset($this[$name])) {
+            throw new RuntimeException('Access violation reading non-existing property from Row');
+        }
+        return $this[$name];
     }
 }

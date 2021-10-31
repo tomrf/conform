@@ -3,11 +3,12 @@
 namespace Tomrf\Snek;
 
 use Exception;
-use PDO;
-use PDOStatement;
 
 class QueryBuilder
 {
+    /* table */
+    private string $table = '';
+
     /* query parts */
     private array $select = [];
     private array $join = [];
@@ -21,10 +22,14 @@ class QueryBuilder
     private array $queryParameters = [];
 
     public function __construct(
-        private Connection $connection,
-        private string $table,
-        private ?ModelFactory $modelFactory = null
+        private QueryExecuter $queryExecuter,
     ) {}
+
+    public function forTable(string $table): QueryBuilder
+    {
+        $this->table = $table;
+        return $this;
+    }
 
     public function select(string $name, string $alias = null): QueryBuilder
     {
@@ -32,7 +37,6 @@ class QueryBuilder
             'expression' => trim($name),
             'alias' => trim($alias),
         ];
-
         return $this;
     }
 
@@ -61,7 +65,6 @@ class QueryBuilder
             'column' => trim($column),
             'direction' => 'ASC'
         ];
-
         return $this;
     }
 
@@ -72,9 +75,7 @@ class QueryBuilder
             'column' => trim($column),
             'direction' => 'DESC'
         ];
-
         return $this;
-
     }
 
     public function limit(int $limit, ?int $offset = null): QueryBuilder
@@ -211,98 +212,24 @@ class QueryBuilder
         }
     }
 
-    private function executeQuery(string $query): PDOStatement
+    public function findOne(): Row|bool
     {
-        \var_dump($query);
-
         $this->assertQueryState();
 
-        try {
-            $statement = $this->connection->getPdo()->prepare(
-                $query
-            );
-        } catch (\Exception $e) {
-            throw new \Exception('Error preparing statement: ' . $e->getMessage());
-        }
-
-        try {
-            $statement->execute($this->queryParameters);
-        } catch (\Exception $e) {
-            throw new \Exception('Error executing query: ' . $e->getMessage());
-        }
-
-        return $statement;
-    }
-
-    private function fetchAllRows(PDOStatement $statement): array
-    {
-        for ($rows = [];;) {
-            if (($row = $this->fetchRow($statement)) === false) {
-                break;
-            }
-            $rows[] = $row;
-        }
-        return $rows;
-    }
-
-    private function fetchRow(PDOStatement $statement)
-    {
-        $row = $statement->fetch(PDO::FETCH_ASSOC);
-        return ($row === false) ? false : new Row($row);
-    }
-
-    public function findOne(): Row|Model|bool
-    {
-        /* force limit to 1 */
-        $this->limit = 1;
-
-        /* execute query and get PDOStatement */
-        $statement = $this->executeQuery(
-            $this->buildQuery()
+        return $this->queryExecuter->findOne(
+            $this->buildQuery(),
+            $this->queryParameters
         );
-
-        $row = $this->fetchRow($statement);
-        if ($row === false) {
-            return false;
-        }
-
-        if ($this->connection->getClassForTable($this->table)) {
-            return $this->createModelInstance($row);
-        }
-
-        return $row;
     }
 
     public function findMany(): ?array
     {
-        /* execute query and get PDOStatement */
-        $statement = $this->executeQuery(
-            $this->buildQuery()
+        $this->assertQueryState();
+
+        return $this->queryExecuter->findMany(
+            $this->buildQuery(),
+            $this->queryParameters
         );
-
-        /* fetch all rows from result */
-        $rows = $this->fetchAllRows($statement);
-
-        /* if table is mapped to a model, wrap all rows in a new model instance */
-        if ($this->connection->getClassForTable($this->table)) {
-            foreach ($rows as $i => $row) {
-                $rows[$i] = $this->createModelInstance($row);
-            }
-        }
-
-        return $rows;
-    }
-
-    private function createModelInstance(Row $row): Model
-    {
-        if ($this->modelFactory === null) {
-            $this->modelFactory = new ModelFactory($this->connection);
-        }
-
-        $modelClass = $this->connection->getClassForTable($this->table);
-        if ($modelClass !== null) {
-            return $this->modelFactory->make($row, $modelClass);
-        }
     }
 
     private function quoteString(string $string): string
