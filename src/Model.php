@@ -11,20 +11,19 @@ abstract class Model
     protected array $protectedColumns = [];
     protected array $columns = [];
 
-    protected ?Connection $connection = null; /* remove */
-    protected ?Row $row = null; /* @todo remove Row, replace with simple data[] - sep. of concerns */
-
+    protected array $data = [];
     protected array $dirty = [];
 
-    public function __construct(?Connection $connection, ?Row $row)
+    public function __construct(Row|array $data = [])
     {
-        $this->connection = $connection;
-        $this->row = $row;
+        foreach ($data as $key => $value) {
+            $this->data[$key] = $value;
+        }
     }
 
     private function getAny(string $column): mixed
     {
-        $value = $this->dirty[$column] ?? $this->row[$column] ?? null; /* @todo throw exception */
+        $value = $this->dirty[$column] ?? $this->data[$column] ?? null; /* @todo throw exception */
 
         if ($value === null) {
             return null;
@@ -54,7 +53,7 @@ abstract class Model
 
     public function has(string $column): bool
     {
-        if (isset($this->dirty[$column]) || isset($this->row[$column])) {
+        if (isset($this->dirty[$column]) || isset($this->data[$column])) {
             return true;
         }
 
@@ -170,7 +169,7 @@ abstract class Model
     public function toArray(): ?array
     {
         $array = [];
-        foreach ($this->row as $key => $value) {
+        foreach ($this->data as $key => $value) {
             $array[$key] = $value;
         }
         foreach ($this->dirty as $key => $value) {

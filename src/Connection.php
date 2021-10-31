@@ -9,6 +9,7 @@ final class Connection
     private PDO $pdo;
     private bool $isConnected = false;
     private array $tableClassMap = [];
+    private array $classTableMap = [];
 
     function __construct(
         private string $dsn,
@@ -46,9 +47,15 @@ final class Connection
         return $this->tableClassMap[$table] ?? null;
     }
 
+    public function getTableForClass(string $class): ?string
+    {
+        return $this->classTableMap[$class] ?? null;
+    }
+
     public function setTableClass(string $table, string $class): void
     {
         $this->tableClassMap[$table] = $class;
+        $this->classTableMap[$class] = $table;
     }
 
     public function getPdo(): PDO
@@ -76,9 +83,9 @@ final class Connection
         return $this->isConnected;
     }
 
-    public function forTable(string $table): Query
+    public function forTable(string $table): QueryBuilder
     {
-        return new Query($this, $table);
+        return new QueryBuilder($this, $table);
     }
 
 }

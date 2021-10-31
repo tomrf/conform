@@ -6,7 +6,7 @@ use Exception;
 use PDO;
 use PDOStatement;
 
-class Query
+class QueryBuilder
 {
     /* query parts */
     private array $select = [];
@@ -26,7 +26,7 @@ class Query
         private ?ModelFactory $modelFactory = null
     ) {}
 
-    public function select(string $name, string $alias = null): Query
+    public function select(string $name, string $alias = null): QueryBuilder
     {
         $this->select[] = [
             'expression' => trim($name),
@@ -36,7 +36,7 @@ class Query
         return $this;
     }
 
-    public function join(string $table, string $joinCondition): Query
+    public function join(string $table, string $joinCondition): QueryBuilder
     {
         $this->join[] = [
             'table' => trim($table),
@@ -45,7 +45,7 @@ class Query
         return $this;
     }
 
-    public function where(string $key, mixed $value): Query
+    public function where(string $key, mixed $value): QueryBuilder
     {
         $this->where[] = [
             'left' => trim($key),
@@ -55,7 +55,7 @@ class Query
         return $this;
     }
 
-    public function orderByAsc($column): Query
+    public function orderByAsc(string $column): QueryBuilder
     {
         $this->orderBy[] = [
             'column' => trim($column),
@@ -66,7 +66,7 @@ class Query
     }
 
 
-    public function orderByDesc($column): Query
+    public function orderByDesc(string $column): QueryBuilder
     {
         $this->orderBy[] = [
             'column' => trim($column),
@@ -77,7 +77,7 @@ class Query
 
     }
 
-    public function limit(int $limit, ?int $offset = null): Query
+    public function limit(int $limit, ?int $offset = null): QueryBuilder
     {
         if ($limit < 0) {
             throw new \Exception('Illegal (negative) LIMIT value specified');
@@ -92,7 +92,7 @@ class Query
         return $this;
     }
 
-    public function offset(int $offset, ?int $limit = null): Query
+    public function offset(int $offset, ?int $limit = null): QueryBuilder
     {
         if ($offset < 0) {
             throw new \Exception('Illegal (negative) OFFSET value specified');
@@ -106,12 +106,6 @@ class Query
 
         return $this;
     }
-
-    // public function setTable(string $table): Query
-    // {
-    //     $this->table = $table;
-    //     return $this;
-    // }
 
     private function buildQuerySelectExpression(): string
     {

@@ -9,11 +9,16 @@ class Row extends ArrayObject
 {
     public function offsetSet(mixed $key, mixed $value): void
     {
-        throw new Exception('Access violation using offsetSet on immutable Row');
+        $this->accessViolation();
     }
 
-    public function offsetUnset($key)
+    public function offsetUnset(mixed $key): void
     {
-        throw new Exception('Access violation using offsetUnset on immutable Row');
+        $this->accessViolation();
+    }
+
+    private function accessViolation(): void
+    {
+        throw new Exception('Access violation modifying immutable Row');
     }
 }
