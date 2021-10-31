@@ -20,10 +20,14 @@ class Query
     /* query parameters */
     private array $queryParameters = [];
 
+    /* model */
+    // private ModelFactory $modelFactory;
+
 
     public function __construct(
         private Connection $connection,
-        private ?string $table = 'null',
+        private ?string $table = null,
+        private ?ModelFactory $modelFactory = null
     ) {}
 
     public function select(string $name, string $alias = null): Query
@@ -240,15 +244,34 @@ class Query
         return $statement;
     }
 
-    private function fetchAllRows(PDOStatement $statement)
+    private function fetchAllRows(PDOStatement $statement): array
     {
         for ($rows = [];;) {
-            if (($row = $statement->fetch(PDO::FETCH_ASSOC)) === false) {
+            if (($row = $this->fetchRow($statement)) === false) {
                 break;
             }
-            $rows[] = new Row($row);
+            $rows[] = $row;
         }
         return $rows;
+    }
+
+    private function fetchRow(PDOStatement $statement)
+    {
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
+        return ($row === false) ? false : new Row($row);
+    }
+
+    public function findOne(): Row
+    {
+        /* force limit to 1 */
+        $this->limit = 1;
+
+        /* execute query and get PDOStatement */
+        $statement = $this->executeQuery(
+            $this->buildQuery()
+        );
+
+        return $this->fetchRow($statement);
     }
 
     public function findMany(): ?array
@@ -262,15 +285,25 @@ class Query
         $rows = $this->fetchAllRows($statement);
 
         /* if table is mapped to a model, wrap all rows in a new model instance */
-        $modelClass = $this->connection->getClassForTable($this->table);
-        if ($modelClass !== null) {
-            $modelFactory = new ModelFactory($this->connection);
+        if ($this->connection->getClassForTable($this->table)) {
             foreach ($rows as $i => $row) {
-                $rows[$i] = $modelFactory->make($row, $modelClass);
+                $rows[$i] = $this->createModelInstance($row);
             }
         }
 
         return $rows;
+    }
+
+    private function createModelInstance(Row $row): Model
+    {
+        if ($this->modelFactory === null) {
+            $this->modelFactory = new ModelFactory($this->connection);
+        }
+
+        $modelClass = $this->connection->getClassForTable($this->table);
+        if ($modelClass !== null) {
+            return $this->modelFactory->make($row, $modelClass);
+        }
     }
 
     private function quoteString(string $string): string
