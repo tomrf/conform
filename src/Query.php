@@ -4,89 +4,268 @@ namespace Tomrf\Snek;
 
 use Exception;
 use PDO;
+use PDOStatement;
 
 class Query
 {
+    /* query parts */
     private array $select = [];
+    private array $join = [];
     private array $where = [];
+    private array $orderBy = [];
+
+    private int $limit = -1;
+    private int $offset = -1;
+
+    /* query parameters */
+    private array $queryParameters = [];
+
 
     public function __construct(
         private Connection $connection,
-        private string $table,
+        private ?string $table = 'null',
     ) {}
 
-    public function select(string $name): Query
+    public function select(string $name, string $alias = null): Query
     {
-        $this->select[] = $name;
+        $this->select[] = [
+            'expression' => trim($name),
+            'alias' => trim($alias),
+        ];
+
         return $this;
     }
 
-    public function where(string $key, string|int|float|bool $value): Query
+    public function join(string $table, string $joinCondition): Query
     {
-        $this->where[$key] = $value;
+        $this->join[] = [
+            'table' => trim($table),
+            'condition' => trim($joinCondition),
+        ];
         return $this;
     }
 
-    public function findMany(): ?array
+    public function where(string $key, mixed $value): Query
     {
-        $qTable = $this->table;
-        $qSelect = '*';
-        $qWhere = '';
-        $params = [];
+        $this->where[] = [
+            'left' => trim($key),
+            'right' => is_string($value) ? trim($value) : $value,
+            'operator' => '='
+        ];
+        return $this;
+    }
 
-        if (count($this->select) > 0) {
-            $qSelect = '';
-            foreach ($this->select as $column) {
-                if (!$this->isValidColumnName($column)) {
-                    throw new Exception('Invalid column name: ' . $column);
-                }
+    public function orderByAsc($column): Query
+    {
+        $this->orderBy[] = [
+            'column' => trim($column),
+            'direction' => 'ASC'
+        ];
 
-                $qSelect .= '`'. $column . '`, ';
-            }
-            $qSelect = trim($qSelect, ', ');
+        return $this;
+    }
+
+
+    public function orderByDesc($column): Query
+    {
+        $this->orderBy[] = [
+            'column' => trim($column),
+            'direction' => 'DESC'
+        ];
+
+        return $this;
+
+    }
+
+    public function limit(int $limit, ?int $offset = null): Query
+    {
+        if ($limit < 0) {
+            throw new \Exception('Illegal (negative) LIMIT value specified');
         }
 
-        $query = sprintf(
-            "SELECT %s FROM `%s`",
-            $qSelect, $qTable
+        $this->limit = $limit;
+
+        if ($offset !== null) {
+            return $this->offset($offset);
+        }
+
+        return $this;
+    }
+
+    public function offset(int $offset, ?int $limit = null): Query
+    {
+        if ($offset < 0) {
+            throw new \Exception('Illegal (negative) OFFSET value specified');
+
+        }
+        $this->offset = $offset;
+
+        if ($limit !== null) {
+            return $this->limit($limit);
+        }
+
+        return $this;
+    }
+
+    public function setTable(string $table): Query
+    {
+        $this->table = $table;
+        return $this;
+    }
+
+    private function buildQuerySelectExpression(): string
+    {
+        if (count($this->select) === 0) {
+            return '*';
+        }
+
+        $selectExpression = '';
+
+        foreach ($this->select as $key => $select) {
+            $selectExpression .= sprintf('%s%s',
+                $this->quoteExpression($select['expression']),
+                $select['alias'] ? (' AS ' . $this->quoteString($select['alias'])) : ''
+            );
+
+            if ($key !== \array_key_last($this->select)) {
+                $selectExpression .= ',';
+            }
+        }
+
+        return $selectExpression;
+    }
+
+    private function buildQueryJoinClause(): string
+    {
+        $joinClause = '';
+        foreach ($this->join as $join) {
+            $joinClause .= sprintf(
+                ' JOIN %s ON %s',
+                $this->quoteExpression($join['table']),
+                $this->quoteExpression($join['condition'])
+            );
+        }
+
+        return $joinClause;
+    }
+
+    private function buildQueryWhereCondition(): string
+    {
+        if (count($this->where) === 0) {
+            return '';
+        }
+
+        $whereCondition = ' WHERE ';
+        foreach ($this->where as $key => $where) {
+            if (isset($this->queryParameters[$where['left']])) {
+                throw new Exception(sprintf(
+                    'Duplicate parameter "%s" in WHERE condition for table "%s"',
+                    $where['left'], $this->table
+                ));
+            }
+
+            $parameterName = str_replace('.', '_', $where['left']);
+            $this->queryParameters[$parameterName] = $where['right'];
+
+            $whereCondition .= sprintf('%s%s:%s%s',
+                $this->quoteExpression($where['left']),
+                $where['operator'],
+                $parameterName,
+                ($key !== \array_key_last($this->where)) ? ' AND ' : ''
+            );
+        }
+
+        return $whereCondition;
+    }
+
+    private function buildQueryOrderByClause(): string
+    {
+        if (count($this->orderBy) === 0) {
+            return '';
+        }
+
+        $orderByClause = ' ORDER BY ';
+        foreach ($this->orderBy as $key => $orderBy) {
+            $orderByClause .= sprintf('%s %s%s',
+                $this->quoteExpression($orderBy['column']),
+                $orderBy['direction'],
+                ($key !== \array_key_last($this->orderBy)) ? ', ' : ''
+            );
+        }
+
+        return $orderByClause;
+    }
+
+    private function buildQuery(): string
+    {
+        return sprintf(
+            'SELECT %s FROM %s%s%s%s%s%s',
+            $this->buildQuerySelectExpression(),
+            $this->quoteExpression($this->table),
+            $this->buildQueryJoinClause(),
+            $this->buildQueryWhereCondition(),
+            $this->buildQueryOrderByClause(),
+            ($this->limit !== -1) ? sprintf(' LIMIT %d', $this->limit) : '',
+            ($this->offset !== -1) ? sprintf(' OFFSET %d', $this->offset) : ''
         );
+    }
 
-        if (count($this->where) > 0) {
-            $qWhere = ' WHERE ';
-            foreach ($this->where as $key => $value) {
-                if (!$this->isValidColumnName($key)) {
-                    throw new Exception('Invalid column name: ' . $key);
-                }
-                $params[$key] = $value;
-                $qWhere .= '`' . $key . '` = :' . $key;
-                if ($key !== \array_key_last($this->where)) {
-                    $qWhere .= ' AND ';
-                }
-            }
-            $query .= $qWhere;
+    private function assertQueryState(): void
+    {
+        if ($this->offset !== -1 && $this->limit === -1) {
+            throw new \Exception('Query validation failed: OFFSET specified without LIMIT clause');
+        }
+    }
+
+    private function executeQuery(string $query): PDOStatement
+    {
+        \var_dump($query);
+
+        $this->assertQueryState();
+
+        try {
+            $statement = $this->connection->getPdo()->prepare(
+                $query
+            );
+        } catch (\Exception $e) {
+            throw new \Exception('Error preparing statement: ' . $e->getMessage());
         }
 
-        // \var_dump($query, $params);die();
+        try {
+            $statement->execute($this->queryParameters);
+        } catch (\Exception $e) {
+            throw new \Exception('Error executing query: ' . $e->getMessage());
+        }
 
-        $statement = $this->connection->getPdo()->prepare($query);
-        $statement->execute($params);
+        return $statement;
+    }
 
-        // $dataRows = $statement->fetchAll(PDO::FETCH_CLASS, RowData::class);
-        $rows = [];
-        while (1) {
-            $row = $statement->fetch(PDO::FETCH_ASSOC);
-            if ($row === false) {
+    private function fetchAllRows(PDOStatement $statement)
+    {
+        for ($rows = [];;) {
+            if (($row = $statement->fetch(PDO::FETCH_ASSOC)) === false) {
                 break;
             }
             $rows[] = new Row($row);
         }
+        return $rows;
+    }
 
-        $modelFactory = new ModelFactory($this->connection);
+    public function findMany(): ?array
+    {
+        /* execute query and get PDOStatement */
+        $statement = $this->executeQuery(
+            $this->buildQuery()
+        );
+
+        /* fetch all rows from result */
+        $rows = $this->fetchAllRows($statement);
+
+        /* if table is mapped to a model, wrap all rows in a new model instance */
         $modelClass = $this->connection->getClassForTable($this->table);
-
         if ($modelClass !== null) {
+            $modelFactory = new ModelFactory($this->connection);
             foreach ($rows as $i => $row) {
-                // $rows[$i] = new $modelClass($row);
                 $rows[$i] = $modelFactory->make($row, $modelClass);
             }
         }
@@ -94,14 +273,63 @@ class Query
         return $rows;
     }
 
+    private function quoteString(string $string): string
+    {
+        return sprintf('"%s"', $string);
+    }
+
+    private function quoteExpression(string $expression): string
+    {
+        $quotedExpression = '';
+
+        if (\mb_strstr($expression, ' ')) {
+            $parts = \explode(' ', $expression);
+
+            foreach ($parts as $part) {
+                $quotedExpression .= $this->quoteExpression($part);
+            }
+
+            return $quotedExpression;
+        }
+
+        if (\mb_strstr($expression, '.')) {
+            $parts = \explode('.', $expression);
+
+            foreach ($parts as $key => $part) {
+                $quotedExpression .= $this->quoteExpression($part);
+                if ($key !== \array_key_last($parts)) {
+                    $quotedExpression .= '.';
+                }
+            }
+
+            return $quotedExpression;
+        }
+
+        if (!$this->isValidColumnName($expression)) {
+            return $expression;
+        } elseif ($expression === '*') {
+            return $expression;
+        }
+
+        return sprintf('`%s`', $expression);
+    }
+
+    private function isExpressionQuoted(string $expression): bool
+    {
+        $offsetEnd = -1 + \mb_strlen($expression);
+        if ($expression[0] === '`' && $expression[$offsetEnd] === '`') {
+            return true;
+        }
+        return false;
+    }
+
     private function isValidColumnName(string $name): bool
     {
-        $legal = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_';
-        for ($i = 0; $i < strlen($name); $i++) {
-            if (!strstr($legal, $name[$i])) {
-                return false;
-            }
+        if (!\preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $name)) {
+            return false;
         }
+
         return true;
     }
+
 }

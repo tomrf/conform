@@ -11,8 +11,8 @@ abstract class Model
     protected array $protectedColumns = [];
     protected array $columns = [];
 
-    protected ?Connection $connection = null;
-    protected ?Row $row = null;
+    protected ?Connection $connection = null; /* remove */
+    protected ?Row $row = null; /* @todo remove Row, replace with simple data[] - sep. of concerns */
 
     protected array $dirty = [];
 
@@ -25,8 +25,31 @@ abstract class Model
     private function getAny(string $column): mixed
     {
         $value = $this->dirty[$column] ?? $this->row[$column] ?? null; /* @todo throw exception */
-        return $value;
 
+        if ($value === null) {
+            return null;
+        }
+
+        $columnDefinitions = $this->getColumnDefinitions($column);
+        if ($columnDefinitions !== null) {
+            if (in_array($columnDefinitions->type, ['int', 'integer'])) {
+                $value = \intval($value);
+            } elseif (in_array($columnDefinitions->type, ['bool', 'boolean'])) {
+                $value = \boolval($value);
+            }
+        }
+
+        return $value;
+    }
+
+    private function getColumnDefinitions(string $column): ?object
+    {
+        $definition = $this->columns[$column] ?? null;
+        if ($definition === null) {
+            return null;
+        }
+
+        return (object) $definition;
     }
 
     public function has(string $column): bool
@@ -135,8 +158,8 @@ abstract class Model
             $params[$paramName] = $value;
         }
 
-        $query .= sprintf(' WHERE `%s`=:%s LIMIT 1', $this->primaryKey, $this->primaryKey);
-        $params[$this->primaryKey] = $this->get($this->primaryKey);
+        $query .= sprintf(' WHERE `%s`=:%s', $this->primaryKey, $this->primaryKey);
+        $params[$this->primaryKey] = $this->getPrimaryKey();
 
         $statement = $this->connection->getPdo()->prepare($query);
         $statement->execute($params);
@@ -164,14 +187,16 @@ abstract class Model
         return \json_encode($this->toArray());
     }
 
-    // public function __get(mixed $name): mixed
-    // {
-    //     return $this->get($name);
-    // }
+    public function __get(mixed $name): mixed
+    {
+        throw new Exception('Access violation directly getting arbitrary property from Model');
+        // return $this->get($name);
+    }
 
-    // public function __set(mixed $name, mixed $value): void
-    // {
-    //     $this->set($name, $value);
-    // }
+    public function __set(mixed $name, mixed $value): void
+    {
+        throw new Exception('Access violation directly setting arbitrary property on Model');
+        // $this->set($name, $value);
+    }
 
 }
