@@ -20,13 +20,9 @@ class Query
     /* query parameters */
     private array $queryParameters = [];
 
-    /* model */
-    // private ModelFactory $modelFactory;
-
-
     public function __construct(
         private Connection $connection,
-        private ?string $table = null,
+        private string $table,
         private ?ModelFactory $modelFactory = null
     ) {}
 
@@ -111,11 +107,11 @@ class Query
         return $this;
     }
 
-    public function setTable(string $table): Query
-    {
-        $this->table = $table;
-        return $this;
-    }
+    // public function setTable(string $table): Query
+    // {
+    //     $this->table = $table;
+    //     return $this;
+    // }
 
     private function buildQuerySelectExpression(): string
     {
@@ -261,7 +257,7 @@ class Query
         return ($row === false) ? false : new Row($row);
     }
 
-    public function findOne(): Row
+    public function findOne(): Row|Model|bool
     {
         /* force limit to 1 */
         $this->limit = 1;
@@ -271,7 +267,16 @@ class Query
             $this->buildQuery()
         );
 
-        return $this->fetchRow($statement);
+        $row = $this->fetchRow($statement);
+        if ($row === false) {
+            return false;
+        }
+
+        if ($this->connection->getClassForTable($this->table)) {
+            return $this->createModelInstance($row);
+        }
+
+        return $row;
     }
 
     public function findMany(): ?array
