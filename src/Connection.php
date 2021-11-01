@@ -9,20 +9,20 @@ final class Connection
     private PDO $pdo;
     private bool $isConnected = false;
 
-    function __construct(
+    public function __construct(
         private QueryBuilderFactory $queryBuilderFactory,
         private string $dsn,
         private ?string $username = null,
         private ?string $password = null,
         private ?array $options = [
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_OBJ,
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
         ]
     ) {
         $this->connect();
     }
 
-    static public function DSN(
+    public static function DSN(
         string $host,
         string $dbname,
         int $port = 3306,
@@ -31,14 +31,12 @@ final class Connection
     ): string {
         return sprintf(
             '%s:host=%s;dbname=%s;port=%d;charset=%s',
-            $driver, $host, $dbname, $port, $charset
+            $driver,
+            $host,
+            $dbname,
+            $port,
+            $charset
         );
-    }
-
-    private function connect(): void
-    {
-        $this->pdo = new PDO($this->dsn, $this->username, $this->password, $this->options);
-        $this->isConnected = true;
     }
 
     public function getPdo(): PDO
@@ -69,6 +67,13 @@ final class Connection
     public function queryTable(string $table): QueryBuilder
     {
         $queryBuilder = $this->queryBuilderFactory->makeQueryBuilder($this);
+
         return $queryBuilder->forTable($table);
+    }
+
+    private function connect(): void
+    {
+        $this->pdo = new PDO($this->dsn, $this->username, $this->password, $this->options);
+        $this->isConnected = true;
     }
 }

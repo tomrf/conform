@@ -26,34 +26,14 @@ abstract class Model
         }
     }
 
-    private function getAny(string $column): mixed
+    public function __get(mixed $name): mixed
     {
-        $value = $this->dirty[$column] ?? $this->data[$column] ?? null; /* @todo throw exception */
-
-        if ($value === null) {
-            return null;
-        }
-
-        $columnDefinitions = $this->getColumnDefinitions($column);
-        if ($columnDefinitions !== null) {
-            if (in_array($columnDefinitions->type, ['int', 'integer'])) {
-                $value = \intval($value);
-            } elseif (in_array($columnDefinitions->type, ['bool', 'boolean'])) {
-                $value = \boolval($value);
-            }
-        }
-
-        return $value;
+        throw new Exception('Access violation directly getting arbitrary property from Model');
     }
 
-    private function getColumnDefinitions(string $column): ?object
+    public function __set(mixed $name, mixed $value): void
     {
-        $definition = $this->columns[$column] ?? null;
-        if ($definition === null) {
-            return null;
-        }
-
-        return (object) $definition;
+        throw new Exception('Access violation directly setting arbitrary property on Model');
     }
 
     public function has(string $column): bool
@@ -70,9 +50,11 @@ abstract class Model
         if ($this->isProtected($column)) {
             throw new Exception(sprintf(
                 'Access violation getting protected column "%s" for table "%s"',
-                $column, $this->table
+                $column,
+                $this->table
             ));
         }
+
         return $this->getAny($column);
     }
 
@@ -81,9 +63,11 @@ abstract class Model
         if (!$this->isProtected($protectedColumn)) {
             throw new Exception(sprintf(
                 'Getting protected column "%s" for table "%s" but column is not protected or does not exist',
-                $protectedColumn, $this->table
+                $protectedColumn,
+                $this->table
             ));
         }
+
         return $this->getAny($protectedColumn);
     }
 
@@ -97,21 +81,23 @@ abstract class Model
         if ($this->isProtected($column)) {
             throw new Exception(sprintf(
                 'Access violation setting protected column "%s" for table "%s"',
-                $column, $this->table
+                $column,
+                $this->table
             ));
         }
 
         if ($this->isPrimaryKey($column)) {
             throw new Exception(sprintf(
                 'Access violation setting primary key column "%s" for table "%s"',
-                $column, $this->table
+                $column,
+                $this->table
             ));
         }
 
         $valueType = gettype($value);
         $columnType = $this->columns[$column]['type'] ?? null;
 
-        if ($columnType !== null && $valueType !== $columnType) {
+        if (null !== $columnType && $valueType !== $columnType) {
             throw new Exception(sprintf(
                 'Illegal type "%s" (expected "%s") for column "%s" in table "%s"',
                 $valueType,
@@ -126,9 +112,10 @@ abstract class Model
 
     public function isDirty(string $column = null): bool
     {
-        if ($column !== null) {
+        if (null !== $column) {
             return isset($this->dirty[$column]) ? true : false;
         }
+
         return count($this->dirty) ? true : false;
     }
 
@@ -144,7 +131,7 @@ abstract class Model
 
     public function save(): bool
     {
-        if ($this->getPrimaryKey() === null) {
+        if (null === $this->getPrimaryKey()) {
             throw new RuntimeException('Cannot save Model: primaryKey is row data is NULL');
         }
 
@@ -157,7 +144,7 @@ abstract class Model
         foreach ($this->dirty as $column => $value) {
             $paramName = $column;
             if (isset($params[$paramName])) {
-                $paramName = $paramName . substr(md5(random_bytes(32)), 0, 6);
+                $paramName = $paramName.substr(md5(random_bytes(32)), 0, 6);
             }
             $query .= sprintf('`%s`=:%s', $column, $paramName);
             if ($column !== \array_key_last($this->dirty)) {
@@ -187,6 +174,7 @@ abstract class Model
         foreach ($this->protectedColumns as $key) {
             unset($array[$key]);
         }
+
         return $array;
     }
 
@@ -195,14 +183,33 @@ abstract class Model
         return \json_encode($this->toArray());
     }
 
-    public function __get(mixed $name): mixed
+    private function getAny(string $column): mixed
     {
-        throw new Exception('Access violation directly getting arbitrary property from Model');
+        $value = $this->dirty[$column] ?? $this->data[$column] ?? null; // @todo throw exception
+
+        if (null === $value) {
+            return null;
+        }
+
+        $columnDefinitions = $this->getColumnDefinitions($column);
+        if (null !== $columnDefinitions) {
+            if (in_array($columnDefinitions->type, ['int', 'integer'])) {
+                $value = \intval($value);
+            } elseif (in_array($columnDefinitions->type, ['bool', 'boolean'])) {
+                $value = \boolval($value);
+            }
+        }
+
+        return $value;
     }
 
-    public function __set(mixed $name, mixed $value): void
+    private function getColumnDefinitions(string $column): ?object
     {
-        throw new Exception('Access violation directly setting arbitrary property on Model');
-    }
+        $definition = $this->columns[$column] ?? null;
+        if (null === $definition) {
+            return null;
+        }
 
+        return (object) $definition;
+    }
 }
