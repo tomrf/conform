@@ -4,7 +4,6 @@ namespace Model;
 
 class Post extends \Tomrf\Snek\Model
 {
-    /* table */
     protected string $table = 'post';
     protected string $primaryKey = 'id';
 
@@ -12,10 +11,10 @@ class Post extends \Tomrf\Snek\Model
     protected array $columns = [
         'id' => [
             'type' => 'integer',
-            'unsigned' => true
+            'unsigned' => true,
         ],
         'title' => [
-            'type' => 'string'
-        ]
+            'type' => 'string',
+        ],
     ];
 }

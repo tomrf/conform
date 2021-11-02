@@ -4,7 +4,6 @@ namespace Model;
 
 class User extends \Tomrf\Snek\Model
 {
-    /* table */
     protected string $table = 'user';
     protected string $primaryKey = 'id';
 
@@ -12,10 +11,10 @@ class User extends \Tomrf\Snek\Model
     protected array $columns = [
         'id' => [
             'type' => 'integer',
-            'unsigned' => true
+            'unsigned' => true,
         ],
         'username' => [
-            'type' => 'string'
-        ]
+            'type' => 'string',
+        ],
     ];
 }
