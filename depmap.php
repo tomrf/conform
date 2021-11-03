@@ -7,6 +7,7 @@ require 'vendor/autoload.php';
 $map = [];
 
 $classes = ClassFinder::getClassesInNamespace('Tomrf\Snek', ClassFinder::RECURSIVE_MODE);
+
 foreach ($classes as $class) {
     $deps = getClassDependencies($class);
     addToMap($map, $class, $deps);
@@ -14,10 +15,23 @@ foreach ($classes as $class) {
 
 foreach ($map as $class => $deps) {
     echo $class.': ';
-    foreach ($deps as $depClass => $dep) {
+    foreach ($deps as $depClass) {
         echo $depClass.' ';
     }
     echo PHP_EOL;
+}
+
+$iterator = new RecursiveTreeIterator(
+    new RecursiveArrayIterator($map),
+    RecursiveTreeIterator::SELF_FIRST
+);
+echo PHP_EOL;
+foreach ($iterator as $key => $value) {
+    if (!strstr($value, '-Array')) {
+        echo $value.PHP_EOL;
+    } else {
+        echo $key.PHP_EOL;
+    }
 }
 
 function addToMap(array &$map, string $className, array $classDependencies, $parent = null)
@@ -40,7 +54,10 @@ function addToMap(array &$map, string $className, array $classDependencies, $par
             if (true === $reflectionClass->isInternal()) {
                 continue;
             }
-            $map[$className][$value][] = $parent.'-'.$key ?? $key;
+            if (in_array($className, $map[$value] ?? [])) {
+                continue;
+            }
+            $map[$value][] = $className;
         }
     }
 }
