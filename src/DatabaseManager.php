@@ -2,35 +2,41 @@
 
 namespace Tomrf\Snek;
 
+use RuntimeException;
+
 class DatabaseManager
 {
+    protected array $connections = [];
+
     public function __construct(
-        private Connection $connection,
-        private ModelFactory $modelFactory,
-        private string $queryBuilderClass,
-        private string $queryExecuterClass,
     ) {
     }
 
-    public function queryTable(string $table): QueryBuilder
+    public function addConnection(Connection $connection, string $name = 'default'): void
     {
-        $queryBuilder = $this->makeQueryBuilder($this->connection, $this->modelFactory);
-
-        return $queryBuilder->forTable($table);
+        if (isset($this->connections[$name])) {
+            throw new RuntimeException(sprintf('A connection named %s already exists', $name));
+        }
+        $this->connections[$name] = $connection;
     }
 
-    public function makeQueryBuilder(
-        Connection $connection,
-        ?ModelFactory $modelFactory = null,
-        ?string $modelClass = null
-    ): object // @todo QueryBuilderInterface
+    public function getConnection(string $name = 'default'): Connection
     {
-        return new $this->queryBuilderClass(
-            new $this->queryExecuterClass(
-                $connection,
-                $modelFactory,
-                $modelClass
-            )
-        );
+        return $this->connections[$name] ?? null;
     }
+
+    // public function makeQueryBuilder(
+    //     PdoConnection $connection,
+    //     ?ModelFactory $modelFactory = null,
+    //     ?string $modelClass = null
+    // ): object // @todo QueryBuilderInterface
+    // {
+    //     return new $this->queryBuilderClass(
+    //         new $this->queryExecuterClass(
+    //             $connection,
+    //             $modelFactory,
+    //             $modelClass
+    //         )
+    //     );
+    // }
 }

@@ -15,7 +15,7 @@ abstract class Model
     protected array $data = [];
     protected array $dirty = [];
 
-    protected ?Connection $connection = null;
+    protected ?PdoConnection $connection = null;
 
     public function __construct(Row|array $data = [], ?Connection $connection = null)
     {
@@ -183,7 +183,7 @@ abstract class Model
         return \json_encode($this->toArray());
     }
 
-    private function getAny(string $column): mixed
+    protected function getAny(string $column): mixed
     {
         $value = $this->dirty[$column] ?? $this->data[$column] ?? null; // @todo throw exception
 
@@ -203,7 +203,7 @@ abstract class Model
         return $value;
     }
 
-    private function getColumnDefinitions(string $column): ?object
+    protected function getColumnDefinitions(string $column): ?object
     {
         $definition = $this->columns[$column] ?? null;
         if (null === $definition) {

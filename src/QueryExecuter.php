@@ -8,7 +8,7 @@ use PDOStatement;
 class QueryExecuter
 {
     public function __construct(
-        private Connection $connection,
+        protected PdoConnection $connection,
     ) {
     }
 
@@ -33,7 +33,7 @@ class QueryExecuter
         return $this->fetchAllRows($statement);
     }
 
-    private function executeQuery(string $query, array $queryParameters): PDOStatement
+    protected function executeQuery(string $query, array $queryParameters): PDOStatement
     {
         try {
             $statement = $this->connection->getPdo()->prepare(
@@ -52,7 +52,7 @@ class QueryExecuter
         return $statement;
     }
 
-    private function fetchAllRows(PDOStatement $statement): array
+    protected function fetchAllRows(PDOStatement $statement): array
     {
         for ($rows = [];;) {
             if (($row = $this->fetchRow($statement)) === false) {
@@ -64,7 +64,7 @@ class QueryExecuter
         return $rows;
     }
 
-    private function fetchRow(PDOStatement $statement)
+    protected function fetchRow(PDOStatement $statement)
     {
         $row = $statement->fetch(PDO::FETCH_ASSOC);
 

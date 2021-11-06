@@ -7,22 +7,22 @@ use Exception;
 class QueryBuilder
 {
     // table
-    private string $table = '';
+    protected string $table = '';
 
     // query parts
-    private array $select = [];
-    private array $join = [];
-    private array $where = [];
-    private array $orderBy = [];
+    protected array $select = [];
+    protected array $join = [];
+    protected array $where = [];
+    protected array $orderBy = [];
 
-    private int $limit = -1;
-    private int $offset = -1;
+    protected int $limit = -1;
+    protected int $offset = -1;
 
     // query parameters
-    private array $queryParameters = [];
+    protected array $queryParameters = [];
 
     public function __construct(
-        private QueryExecuter $queryExecuter,
+        protected QueryExecuter $queryExecuter,
     ) {
     }
 
@@ -129,11 +129,16 @@ class QueryBuilder
 
         return $this->queryExecuter->findMany(
             $this->buildQuery(),
-            $this->queryParameters
+            $this->getQueryParameters()
         );
     }
 
-    private function buildQuerySelectExpression(): string
+    protected function getQueryParameters(): array
+    {
+        return $this->queryParameters;
+    }
+
+    protected function buildQuerySelectExpression(): string
     {
         if (0 === count($this->select)) {
             return '*';
@@ -156,7 +161,7 @@ class QueryBuilder
         return $selectExpression;
     }
 
-    private function buildQueryJoinClause(): string
+    protected function buildQueryJoinClause(): string
     {
         $joinClause = '';
         foreach ($this->join as $join) {
@@ -170,7 +175,7 @@ class QueryBuilder
         return $joinClause;
     }
 
-    private function buildQueryWhereCondition(): string
+    protected function buildQueryWhereCondition(): string
     {
         if (0 === count($this->where)) {
             return '';
@@ -201,7 +206,7 @@ class QueryBuilder
         return $whereCondition;
     }
 
-    private function buildQueryOrderByClause(): string
+    protected function buildQueryOrderByClause(): string
     {
         if (0 === count($this->orderBy)) {
             return '';
@@ -220,7 +225,7 @@ class QueryBuilder
         return $orderByClause;
     }
 
-    private function buildQuery(): string
+    protected function buildQuery(): string
     {
         return sprintf(
             'SELECT %s FROM %s%s%s%s%s%s',
@@ -234,19 +239,19 @@ class QueryBuilder
         );
     }
 
-    private function assertQueryState(): void
+    protected function assertQueryState(): void
     {
         if (-1 !== $this->offset && -1 === $this->limit) {
             throw new \Exception('Query validation failed: OFFSET specified without LIMIT clause');
         }
     }
 
-    private function quoteString(string $string): string
+    protected function quoteString(string $string): string
     {
         return sprintf('"%s"', $string);
     }
 
-    private function quoteExpression(string $expression): string
+    protected function quoteExpression(string $expression): string
     {
         $quotedExpression = '';
 
@@ -283,7 +288,7 @@ class QueryBuilder
         return sprintf('`%s`', $expression);
     }
 
-    private function isExpressionQuoted(string $expression): bool
+    protected function isExpressionQuoted(string $expression): bool
     {
         $offsetEnd = -1 + \mb_strlen($expression);
         if ('`' === $expression[0] && '`' === $expression[$offsetEnd]) {
@@ -293,7 +298,7 @@ class QueryBuilder
         return false;
     }
 
-    private function isValidColumnName(string $name): bool
+    protected function isValidColumnName(string $name): bool
     {
         if (!\preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $name)) {
             return false;
