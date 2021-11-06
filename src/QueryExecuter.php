@@ -14,8 +14,6 @@ class QueryExecuter
 
     public function findOne(string $query, array $queryParameters): Row|bool
     {
-        $this->limit = 1;
-
         $statement = $this->executeQuery($query, $queryParameters);
         $row = $this->fetchRow($statement);
 

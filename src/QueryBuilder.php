@@ -115,6 +115,7 @@ class QueryBuilder
 
     public function findOne(): Row|bool
     {
+        $this->limit = 1;
         $this->assertQueryState();
 
         return $this->queryExecuter->findOne(

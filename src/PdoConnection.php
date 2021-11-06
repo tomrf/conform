@@ -37,14 +37,9 @@ final class PdoConnection extends Connection
         return $this->pdo;
     }
 
-    public function getDsn(): string
+    public function getCredentials(): Credentials
     {
-        return $this->dsn;
-    }
-
-    public function getUsername(): ?string
-    {
-        return $this->username;
+        return $this->credentials;
     }
 
     public function getOptions(): ?array

@@ -15,7 +15,7 @@ abstract class Model
     protected array $data = [];
     protected array $dirty = [];
 
-    protected ?PdoConnection $connection = null;
+    protected ?Connection $connection = null;
 
     public function __construct(Row|array $data = [], ?Connection $connection = null)
     {
@@ -131,8 +131,11 @@ abstract class Model
 
     public function save(): bool
     {
+        if (null === $this->connection) {
+            throw new RuntimeException('Cannot save model: no database connection supplied on model construction');
+        }
         if (null === $this->getPrimaryKey()) {
-            throw new RuntimeException('Cannot save Model: primaryKey is row data is NULL');
+            throw new RuntimeException('Cannot save model: primary key in row data is NULL');
         }
 
         if (!$this->isDirty()) {
@@ -156,7 +159,9 @@ abstract class Model
         $query .= sprintf(' WHERE `%s`=:%s', $this->primaryKey, $this->primaryKey);
         $params[$this->primaryKey] = $this->getPrimaryKey();
 
-        $statement = $this->connection->getPdo()->prepare($query);
+        /** @var PdoConnection */
+        $connection = $this->connection;
+        $statement = $connection->getPdo()->prepare($query);
         $statement->execute($params);
 
         return true;
