@@ -2,6 +2,17 @@
 
 namespace Tomrf\Snek;
 
-class Connection
+abstract class Connection
 {
+    abstract public function getQueryBuilder(): QueryBuilder;
+
+    abstract public function getCredentials(): Credentials;
+
+    abstract public function getOptions(): ?array;
+
+    abstract public function isConnected(): bool;
+
+    abstract public function queryTable(string $tableName): QueryBuilder;
+
+    abstract protected function connect(): void;
 }

@@ -4,7 +4,7 @@ namespace Tomrf\Snek;
 
 use PDO;
 
-final class PdoConnection extends Connection
+class PdoConnection extends Connection
 {
     protected PDO $pdo;
     protected bool $isConnected = false;
@@ -21,13 +21,18 @@ final class PdoConnection extends Connection
         $this->connect();
     }
 
-    public function queryTable(string $tableName): QueryBuilder
+    public function getQueryBuilder(): QueryBuilder
     {
-        $queryBuilder = $this->queryBuilderFactory->make(
+        return $this->queryBuilderFactory->make(
             $this->queryExecuterFactory->make(
                 $this,
             )
         );
+    }
+
+    public function queryTable(string $tableName): QueryBuilder
+    {
+        $queryBuilder = $this->getQueryBuilder();
 
         return $queryBuilder->forTable($tableName);
     }
