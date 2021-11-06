@@ -1,8 +1,12 @@
 <?php
 
-namespace Tomrf\Snek;
+namespace Tomrf\Snek\Pdo;
 
 use PDO;
+use Tomrf\Snek\Connection;
+use Tomrf\Snek\Credentials;
+use Tomrf\Snek\Factory;
+use Tomrf\Snek\QueryBuilder;
 
 class PdoConnection extends Connection
 {

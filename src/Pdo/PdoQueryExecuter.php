@@ -1,11 +1,12 @@
 <?php
 
-namespace Tomrf\Snek;
+namespace Tomrf\Snek\Pdo;
 
 use PDO;
 use PDOStatement;
+use Tomrf\Snek\Row;
 
-class QueryExecuter
+class PdoQueryExecuter
 {
     public function __construct(
         protected PdoConnection $connection,
