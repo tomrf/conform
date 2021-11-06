@@ -2,12 +2,21 @@
 
 namespace Tomrf\Snek;
 
-class QueryBuilderFactory
+class DatabaseManager
 {
     public function __construct(
+        private Connection $connection,
+        private ModelFactory $modelFactory,
         private string $queryBuilderClass,
         private string $queryExecuterClass,
     ) {
+    }
+
+    public function queryTable(string $table): QueryBuilder
+    {
+        $queryBuilder = $this->makeQueryBuilder($this->connection, $this->modelFactory);
+
+        return $queryBuilder->forTable($table);
     }
 
     public function makeQueryBuilder(

@@ -13,14 +13,6 @@ foreach ($classes as $class) {
     addToMap($map, $class, $deps);
 }
 
-foreach ($map as $class => $deps) {
-    echo $class.': ';
-    foreach ($deps as $depClass) {
-        echo $depClass.' ';
-    }
-    echo PHP_EOL;
-}
-
 $iterator = new RecursiveTreeIterator(
     new RecursiveArrayIterator($map),
     RecursiveTreeIterator::SELF_FIRST
@@ -91,6 +83,9 @@ function getClassDependencies(string $class)
         }
     }
 
+    return $deps;
+    /*
+
     foreach ($reflection->getMethods() as $method) {
         $returnType = $method->getReturnType();
         if (null !== $returnType && $returnType instanceof ReflectionNamedType) {
@@ -119,4 +114,5 @@ function getClassDependencies(string $class)
     }
 
     return $deps;
+*/
 }

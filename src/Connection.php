@@ -10,7 +10,6 @@ final class Connection
     private bool $isConnected = false;
 
     public function __construct(
-        private QueryBuilderFactory $queryBuilderFactory,
         private string $dsn,
         private ?string $username = null,
         private ?string $password = null,
@@ -62,13 +61,6 @@ final class Connection
     public function isConnected(): bool
     {
         return $this->isConnected;
-    }
-
-    public function queryTable(string $table): QueryBuilder
-    {
-        $queryBuilder = $this->queryBuilderFactory->makeQueryBuilder($this);
-
-        return $queryBuilder->forTable($table);
     }
 
     private function connect(): void
