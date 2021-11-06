@@ -36,6 +36,13 @@ abstract class Model
         throw new Exception('Access violation directly setting arbitrary property on Model');
     }
 
+    public static function fromRow(Row $row, ?Connection $connection = null): self
+    {
+        $class = get_called_class();
+
+        return new $class($row, $connection);
+    }
+
     public function has(string $column): bool
     {
         if (isset($this->dirty[$column]) || isset($this->data[$column])) {
