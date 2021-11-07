@@ -119,6 +119,16 @@ class PdoQueryBuilder extends QueryBuilder
         return $this->where($column, '!=', $value);
     }
 
+    public function whereNull(string $column): PdoQueryBuilder
+    {
+        return $this->where($column, 'IS', 'NULL');
+    }
+
+    public function whereNotNull(string $column): PdoQueryBuilder
+    {
+        return $this->where($column, 'IS NOT', 'NULL');
+    }
+
     public function whereRaw(string $clause, ?array $namedParameters = null): PdoQueryBuilder
     {
         $this->where[] = [
@@ -259,6 +269,14 @@ class PdoQueryBuilder extends QueryBuilder
                 if (null !== $where['parameters']) {
                     $this->queryParameters = array_merge($this->queryParameters, $where['parameters']);
                 }
+            } elseif ('IS' === substr(strtoupper($where['operator']), 0, 2)) {
+                $whereCondition .= sprintf(
+                    '%s %s %s%s',
+                    $this->quoteExpression($where['left']),
+                    strtoupper($where['operator']),
+                    $where['right'],
+                    ($key !== \array_key_last($this->where)) ? ' AND ' : ''
+                );
             } else {
                 if (isset($this->queryParameters[$where['left']])) {
                     throw new Exception(sprintf(

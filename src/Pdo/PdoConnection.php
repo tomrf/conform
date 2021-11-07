@@ -3,6 +3,7 @@
 namespace Tomrf\Snek\Pdo;
 
 use PDO;
+use PDOStatement;
 use Tomrf\Snek\Connection;
 use Tomrf\Snek\Credentials;
 use Tomrf\Snek\Factory;
@@ -39,6 +40,16 @@ class PdoConnection extends Connection
         $queryBuilder = $this->getQueryBuilder();
 
         return $queryBuilder->forTable($tableName);
+    }
+
+    public function exec(string $statement): int|false
+    {
+        return $this->pdo->exec($statement);
+    }
+
+    public function query(string $statement): PDOStatement|false
+    {
+        return $this->pdo->query($statement);
     }
 
     public function getPdo(): PDO
