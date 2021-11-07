@@ -14,7 +14,7 @@ abstract class QueryBuilder
 
     abstract public function alias(string $expression, string $alias): QueryBuilder;
 
-    abstract public function where(string $key, mixed $value): QueryBuilder;
+    abstract public function where(string $column, string $operator, mixed $value): QueryBuilder;
 
     abstract public function orderByAsc(string $column): QueryBuilder;
 
