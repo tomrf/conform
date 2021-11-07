@@ -38,19 +38,25 @@ class PdoCredentials extends Credentials
     }
 
     public static function DSN(
-        string $host,
-        string $dbname,
-        int $port = 3306,
         string $driver = 'mysql',
+        string $dbname,
+        string $host = null,
+        int $port = 3306,
         string $charset = 'utf8mb4'
     ): string {
-        return sprintf(
-            '%s:host=%s;dbname=%s;port=%d;charset=%s',
-            $driver,
-            $host,
-            $dbname,
-            $port,
-            $charset
-        );
+        if ('sqlite' === mb_strtolower($driver)) {
+            $dsn = sprintf('%s:%s', $driver, $dbname);
+        } else {
+            $dsn = sprintf(
+                '%s:host=%s;dbname=%s;port=%d;charset=%s',
+                $driver,
+                $host,
+                $dbname,
+                $port,
+                $charset
+            );
+        }
+
+        return $dsn;
     }
 }

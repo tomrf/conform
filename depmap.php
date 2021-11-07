@@ -13,6 +13,15 @@ foreach ($classes as $class) {
     addToMap($map, $class, $deps);
 }
 
+$iterator = new RecursiveArrayIterator($map);
+foreach ($iterator as $key => $value) {
+    foreach ($value as $class) {
+        echo '"'.$key.'" -> "'.$class.'"'.PHP_EOL;
+    }
+}
+
+exit();
+
 $iterator = new RecursiveTreeIterator(
     new RecursiveArrayIterator($map),
     RecursiveTreeIterator::SELF_FIRST

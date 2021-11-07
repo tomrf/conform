@@ -6,9 +6,13 @@ abstract class QueryBuilder
 {
     abstract public function forTable(string $table): QueryBuilder;
 
-    abstract public function select(string $name, string $alias = null): QueryBuilder;
+    abstract public function select(...$params): QueryBuilder;
+
+    abstract public function selectAs(string $expression, string $alias): QueryBuilder;
 
     abstract public function join(string $table, string $joinCondition): QueryBuilder;
+
+    abstract public function alias(string $expression, string $alias): QueryBuilder;
 
     abstract public function where(string $key, mixed $value): QueryBuilder;
 

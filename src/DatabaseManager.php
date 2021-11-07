@@ -8,10 +8,6 @@ class DatabaseManager
 {
     protected array $connections = [];
 
-    public function __construct(
-    ) {
-    }
-
     public function addConnection(Connection $connection, string $name = 'default'): void
     {
         if (isset($this->connections[$name])) {
@@ -24,19 +20,4 @@ class DatabaseManager
     {
         return $this->connections[$name] ?? null;
     }
-
-    // public function makeQueryBuilder(
-    //     PdoConnection $connection,
-    //     ?ModelFactory $modelFactory = null,
-    //     ?string $modelClass = null
-    // ): object // @todo QueryBuilderInterface
-    // {
-    //     return new $this->queryBuilderClass(
-    //         new $this->queryExecuterClass(
-    //             $connection,
-    //             $modelFactory,
-    //             $modelClass
-    //         )
-    //     );
-    // }
 }

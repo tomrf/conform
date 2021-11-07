@@ -35,12 +35,55 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    public function select(string $name, string $alias = null): QueryBuilder
+    public function select(...$params): QueryBuilder
+    {
+        foreach ($params as $column) {
+            $this->select[] = [
+                'expression' => $this->quoteExpression(trim($column)),
+            ];
+        }
+
+        return $this;
+    }
+
+    public function selectAs(string $expression, string $alias): QueryBuilder
     {
         $this->select[] = [
-            'expression' => trim($name),
-            'alias' => trim($alias),
+            'expression' => $this->quoteExpression(trim($expression)),
+            'alias' => $this->quoteString(trim($alias)),
         ];
+
+        return $this;
+    }
+
+    public function selectRaw(...$params): QueryBuilder
+    {
+        foreach ($params as $expression) {
+            $this->select[] = [
+                'expression' => trim($expression),
+            ];
+        }
+
+        return $this;
+    }
+
+    public function selectRawAs(string $expression, string $alias): QueryBuilder
+    {
+        $this->select[] = [
+            'expression' => trim($expression),
+            'alias' => $this->quoteString(trim($alias)),
+        ];
+
+        return $this;
+    }
+
+    public function alias(string $expression, string $alias): QueryBuilder
+    {
+        foreach ($this->select as $i => $select) {
+            if ($select['expression'] === $expression) {
+                $this->select[$i]['alias'] = $this->quoteString(trim($alias));
+            }
+        }
 
         return $this;
     }
@@ -152,8 +195,8 @@ class PdoQueryBuilder extends QueryBuilder
         foreach ($this->select as $key => $select) {
             $selectExpression .= sprintf(
                 '%s%s',
-                $this->quoteExpression($select['expression']),
-                $select['alias'] ? (' AS '.$this->quoteString($select['alias'])) : ''
+                $select['expression'],
+                isset($select['alias']) ? (' AS '.$select['alias']) : ''
             );
 
             if ($key !== \array_key_last($this->select)) {
