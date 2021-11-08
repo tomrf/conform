@@ -16,5 +16,16 @@ class User extends \Tomrf\Snek\Model
         'username' => [
             'type' => 'string',
         ],
+        'password' => [
+            'type' => 'string',
+            'default' => '-',
+        ],
     ];
+
+    protected function onBeforePersist(): void
+    {
+        if (null === $this->get('ref')) {
+            $this->set('ref', md5(random_bytes(32)));
+        }
+    }
 }
