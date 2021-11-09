@@ -174,7 +174,7 @@ abstract class Model
         return true;
     }
 
-    public function insert(): bool
+    public function insert(bool $onDuplicateIgnore = false): bool
     {
         if (null === $this->connection) {
             throw new RuntimeException('Cannot save model: no database connection supplied on model construction');
@@ -213,6 +213,10 @@ abstract class Model
                 $values .= ')';
                 $query .= ') VALUES '.$values;
             }
+        }
+
+        if (true === $onDuplicateIgnore) {
+            $query .= ' ON DUPLICATE IGNORE';
         }
 
         /** @var PdoConnection */
