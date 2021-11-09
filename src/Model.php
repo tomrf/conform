@@ -216,7 +216,7 @@ abstract class Model
         }
 
         if (true === $onDuplicateIgnore) {
-            $query .= ' ON DUPLICATE IGNORE';
+            $query .= ' ON DUPLICATE KEY IGNORE';
         }
 
         /** @var PdoConnection */
