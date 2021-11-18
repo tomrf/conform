@@ -16,7 +16,6 @@ abstract class Model
     protected array $dirty = [];
 
     protected ?Connection $connection = null;
-    protected ?Credentials $connectionCredentials = null;
 
     public function __construct(Row|array $data = [], ?Connection $connection = null)
     {
@@ -29,9 +28,6 @@ abstract class Model
 
     public function __sleep(): array
     {
-        if (null !== $this->connection) {
-            $this->connectionCredentials = $this->connection->getCredentials();
-        }
         $this->connection = null;
 
         return array_keys(get_object_vars($this));
@@ -45,6 +41,11 @@ abstract class Model
     public function __set(mixed $name, mixed $value): void
     {
         throw new Exception('Access violation directly setting arbitrary property on Model');
+    }
+
+    public function setConnection(Connection $connection): void
+    {
+        $this->connection = $connection;
     }
 
     public static function fromRow(Row $row, ?Connection $connection = null): self
