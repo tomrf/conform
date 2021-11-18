@@ -15,7 +15,6 @@ class PdoQueryExecuter
 
     public function findOne(string $query, array $queryParameters): Row|bool
     {
-        // var_dump($query, $queryParameters);
         $statement = $this->executeQuery($query, $queryParameters);
         $row = $this->fetchRow($statement);
 
