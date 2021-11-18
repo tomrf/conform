@@ -34,7 +34,7 @@ abstract class Model
         }
         $this->connection = null;
 
-        return get_object_vars($this);
+        return array_keys(get_object_vars($this));
     }
 
     public function __get(mixed $name): mixed
@@ -52,6 +52,12 @@ abstract class Model
         $class = get_called_class();
 
         return new $class($row, $connection);
+    }
+
+    public static function fromObject(Model $object, ?Connection $connection = null): self
+    {
+        // @todo keep $connection, add setConnection() to Model ?
+        return $object;
     }
 
     public function has(string $column): bool
