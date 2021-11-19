@@ -15,22 +15,11 @@ abstract class Model
     protected array $data = [];
     protected array $dirty = [];
 
-    protected ?Connection $connection = null;
-
-    public function __construct(Row|array $data = [], ?Connection $connection = null)
+    public function __construct(Row|array $data = [])
     {
-        $this->connection = $connection;
-
         foreach ($data as $key => $value) {
             $this->data[$key] = $value;
         }
-    }
-
-    public function __sleep(): array
-    {
-        $this->connection = null;
-
-        return array_keys(get_object_vars($this));
     }
 
     public function __get(mixed $name): mixed
@@ -43,34 +32,19 @@ abstract class Model
         throw new Exception('Access violation directly setting arbitrary property on Model');
     }
 
-    public function __debugInfo(): array
+    public function getDirty(): array
     {
-        $debugInfo = get_object_vars($this);
-
-        if (isset($debugInfo['connection'])) {
-            $debugInfo['connection'] = '<hidden>';
-        }
-
-        return $debugInfo;
+        return $this->dirty;
     }
 
-    public function setConnection(Connection $connection): void
+    public static function fromRow(Row $row): self
     {
-        $this->connection = $connection;
+        return self::returnInstanceOfSelf($row);
     }
 
-    public static function fromRow(Row $row, ?Connection $connection = null): self
+    public static function fromObject(Model $modelObject): self
     {
-        return self::returnInstanceOfSelf($row, $connection);
-    }
-
-    public static function fromObject(Model $object, ?Connection $connection = null): self
-    {
-        if (null !== $connection) {
-            $object->setConnection($connection);
-        }
-
-        return $object;
+        return self::returnInstanceOfSelf($modelObject->toArray());
     }
 
     public static function fromConnectionById(Connection $connection, int|string $id, ?string $column = null): self
@@ -96,7 +70,7 @@ abstract class Model
             ));
         }
 
-        return self::fromRow($row, $connection);
+        return self::fromRow($row);
     }
 
     public function has(string $column): bool
@@ -125,7 +99,7 @@ abstract class Model
     {
         if (!$this->isProtected($protectedColumn)) {
             throw new Exception(sprintf(
-                'Getting protected column "%s" for table "%s" but column is not protected or does not exist',
+                'Protected column "%s" for table "%s" is not protected or does not exist',
                 $protectedColumn,
                 $this->table
             ));
@@ -136,7 +110,12 @@ abstract class Model
 
     public function getPrimaryKey(): mixed
     {
-        return $this->getAny($this->primaryKey);
+        return $this->getAny($this->getPrimaryKeyColumn());
+    }
+
+    public function getPrimaryKeyColumn(): string
+    {
+        return $this->primaryKey;
     }
 
     public function set(string $column, mixed $value): mixed
@@ -192,44 +171,12 @@ abstract class Model
         return ($column === $this->primaryKey) ? true : false;
     }
 
-    public function save(): bool
+    public function getTable(): string
     {
-        if (null === $this->connection) {
-            throw new RuntimeException('Cannot save model: no database connection supplied on model construction');
-        }
-        if (null === $this->getPrimaryKey()) {
-            throw new RuntimeException('Cannot save model: primary key in row data is NULL');
-        }
-
-        if (!$this->isDirty()) {
-            return true;
-        }
-
-        $params = [];
-        $query = sprintf('UPDATE `%s` SET ', $this->table);
-        foreach ($this->dirty as $column => $value) {
-            $paramName = $column;
-            if (isset($params[$paramName])) {
-                $paramName = $paramName.substr(md5(random_bytes(32)), 0, 6);
-            }
-            $query .= sprintf('`%s`=:%s', $column, $paramName);
-            if ($column !== \array_key_last($this->dirty)) {
-                $query .= ', ';
-            }
-            $params[$paramName] = $value;
-        }
-
-        $query .= sprintf(' WHERE `%s`=:%s', $this->primaryKey, $this->primaryKey);
-        $params[$this->primaryKey] = $this->getPrimaryKey();
-
-        /** @var PdoConnection */
-        $connection = $this->connection;
-        $statement = $connection->getPdo()->prepare($query);
-        $statement->execute($params);
-
-        return true;
+        return $this->table;
     }
 
+    // @todo fix move to connection
     public function insert(bool $insertIgnore = false): bool
     {
         if (null === $this->connection) {
@@ -282,25 +229,33 @@ abstract class Model
         return true;
     }
 
-    public function toArray(): ?array
+    public function toArray(bool $includeProtectedColumns = false): ?array
     {
         $array = [];
+
+        // first set initial values
         foreach ($this->data as $key => $value) {
-            $array[$key] = $value;
+            $array[$key] = $this->getAny($key);
         }
+
+        // then overwrite dirty keys
         foreach ($this->dirty as $key => $value) {
-            $array[$key] = $value;
+            $array[$key] = $this->getAny($key);
         }
-        foreach ($this->protectedColumns as $key) {
-            unset($array[$key]);
+
+        // finally remove protected keys
+        if (false === $includeProtectedColumns) {
+            foreach ($this->protectedColumns as $key) {
+                unset($array[$key]);
+            }
         }
 
         return $array;
     }
 
-    public function toJson(): string
+    public function toJson(bool $includeProtectedColumns = false): string
     {
-        return \json_encode($this->toArray());
+        return \json_encode($this->toArray($includeProtectedColumns));
     }
 
     protected function getAny(string $column): mixed
@@ -333,10 +288,10 @@ abstract class Model
         return (object) $definition;
     }
 
-    protected static function returnInstanceOfSelf(Row|array $data = [], ?Connection $connection = null): self
+    protected static function returnInstanceOfSelf(Row|array $data = []): self
     {
         $class = get_called_class();
 
-        return new $class($data, $connection);
+        return new $class($data);
     }
 }

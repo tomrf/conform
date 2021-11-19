@@ -3,10 +3,13 @@
 namespace Tomrf\Snek\Pdo;
 
 use PDO;
+use PDOException;
 use PDOStatement;
+use RuntimeException;
 use Tomrf\Snek\Connection;
 use Tomrf\Snek\Credentials;
 use Tomrf\Snek\Factory;
+use Tomrf\Snek\Model;
 use Tomrf\Snek\QueryBuilder;
 
 class PdoConnection extends Connection
@@ -50,6 +53,48 @@ class PdoConnection extends Connection
     public function query(string $statement): PDOStatement|false
     {
         return $this->pdo->query($statement);
+    }
+
+    public function persist(Model $model): Model
+    {
+        if (null === $model->getPrimaryKey()) {
+            throw new RuntimeException('Cannot persist model: primary key in data is NULL');
+        }
+
+        if (!$model->isDirty()) {
+            return $model;
+        }
+
+        $parameters = [];
+        $query = sprintf('UPDATE `%s` SET ', $model->getTable());
+        foreach ($model->getDirty() as $column => $value) {
+            $parameterName = $column;
+            if (isset($parameters[$parameterName])) {
+                $parameterName = $parameterName.substr(md5(random_bytes(32)), 0, 6);
+            }
+            $query .= sprintf('`%s`=:%s', $column, $parameterName);
+            if ($column !== \array_key_last($model->getDirty())) {
+                $query .= ', ';
+            }
+            $parameters[$parameterName] = $value;
+        }
+
+        $query .= sprintf(' WHERE `%s`=:%s', $model->getPrimaryKeyColumn(), $model->getPrimaryKeyColumn());
+        $parameters[$model->getPrimaryKeyColumn()] = $model->getPrimaryKey();
+
+        try {
+            $statement = $this->getPdo()->prepare($query);
+            $statement->execute($parameters);
+        } catch (PDOException $e) {
+            throw new RuntimeException(sprintf(
+                'Could not persist model: %s',
+                $e->getMessage()
+            ));
+        }
+
+        $modelClass = get_class($model);
+
+        return new $modelClass($model->toArray(true));
     }
 
     public function getPdo(): PDO

@@ -14,5 +14,7 @@ abstract class Connection
 
     abstract public function queryTable(string $tableName): QueryBuilder;
 
+    abstract public function persist(Model $model): Model;
+
     abstract protected function connect(): void;
 }

@@ -20,7 +20,7 @@ foreach ($iterator as $key => $value) {
     }
 }
 
-exit();
+// exit();
 
 $iterator = new RecursiveTreeIterator(
     new RecursiveArrayIterator($map),
