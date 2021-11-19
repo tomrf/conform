@@ -3,6 +3,8 @@ general
 hide protected columns from dump() etc?
 
 
+ActualModel extends Model, ModelFactory..?
+
 
 
 query builder

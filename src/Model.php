@@ -43,6 +43,17 @@ abstract class Model
         throw new Exception('Access violation directly setting arbitrary property on Model');
     }
 
+    public function __debugInfo(): array
+    {
+        $debugInfo = get_object_vars($this);
+
+        if (isset($debugInfo['connection'])) {
+            $debugInfo['connection'] = '<hidden>';
+        }
+
+        return $debugInfo;
+    }
+
     public function setConnection(Connection $connection): void
     {
         $this->connection = $connection;
@@ -50,15 +61,42 @@ abstract class Model
 
     public static function fromRow(Row $row, ?Connection $connection = null): self
     {
-        $class = get_called_class();
-
-        return new $class($row, $connection);
+        return self::returnInstanceOfSelf($row, $connection);
     }
 
     public static function fromObject(Model $object, ?Connection $connection = null): self
     {
-        // @todo keep $connection, add setConnection() to Model ?
+        if (null !== $connection) {
+            $object->setConnection($connection);
+        }
+
         return $object;
+    }
+
+    public static function fromConnectionById(Connection $connection, int|string $id, ?string $column = null): self
+    {
+        $class = get_called_class();
+        $modelInstance = new $class();
+
+        $table = $modelInstance->table;
+        $idColumn = $column ?? $modelInstance->primaryKey;
+
+        $row = $connection->getQueryBuilder()
+            ->forTable($table)
+            ->whereEqual($idColumn, $id)
+            ->findOne()
+        ;
+
+        if (false === $row) {
+            throw new RuntimeException(sprintf(
+                'Could not create instance of model "%s" from database connection: no match for column "%s" with value "%s"',
+                $class,
+                $idColumn,
+                (string) $id
+            ));
+        }
+
+        return self::fromRow($row, $connection);
     }
 
     public function has(string $column): bool
@@ -293,5 +331,12 @@ abstract class Model
         }
 
         return (object) $definition;
+    }
+
+    protected static function returnInstanceOfSelf(Row|array $data = [], ?Connection $connection = null): self
+    {
+        $class = get_called_class();
+
+        return new $class($data, $connection);
     }
 }
