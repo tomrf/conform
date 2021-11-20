@@ -20,8 +20,6 @@ class PdoQueryExecuter
      * @param array<string,mixed> $queryParameters
      *
      * @throws Exception
-     *
-     * @return bool|Row
      */
     public function findOne(string $query, array $queryParameters): Row|bool
     {
