@@ -13,6 +13,9 @@ class DatabaseManager
      */
     protected array $connections = [];
 
+    /**
+     * @throws RuntimeException
+     */
     public function addConnection(Connection $connection, string $name = 'default'): void
     {
         if (isset($this->connections[$name])) {
