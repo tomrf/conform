@@ -10,19 +10,31 @@ use Tomrf\Snek\Row;
 
 class PdoQueryBuilder extends QueryBuilder
 {
-    // table
     protected string $table = '';
 
-    // query parts
-    protected array $select = [];
-    protected array $join = [];
-    protected array $where = [];
-    protected array $orderBy = [];
+    /**
+     * @var array<array>
+     */
+    protected array $querySelect = [];
+    /**
+     * @var array<array>
+     */
+    protected array $queryJoin = [];
+    /**
+     * @var array<array>
+     */
+    protected array $queryWhere = [];
+    /**
+     * @var array<array>
+     */
+    protected array $queryOrderBy = [];
 
-    protected int $limit = -1;
-    protected int $offset = -1;
+    protected int $queryLimit = -1;
+    protected int $queryLimitOffset = -1;
 
-    // query parameters
+    /**
+     * @var array<string,mixed>
+     */
     protected array $queryParameters = [];
 
     public function __construct(
@@ -37,10 +49,10 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    public function select(...$params): self
+    public function select(string ...$params): self
     {
         foreach ($params as $column) {
-            $this->select[] = [
+            $this->querySelect[] = [
                 'expression' => $this->quoteExpression(trim($column)),
             ];
         }
@@ -50,7 +62,7 @@ class PdoQueryBuilder extends QueryBuilder
 
     public function selectAs(string $expression, string $alias): self
     {
-        $this->select[] = [
+        $this->querySelect[] = [
             'expression' => $this->quoteExpression(trim($expression)),
             'alias' => $this->quoteString(trim($alias)),
         ];
@@ -58,10 +70,10 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    public function selectRaw(...$params): self
+    public function selectRaw(string ...$params): self
     {
         foreach ($params as $expression) {
-            $this->select[] = [
+            $this->querySelect[] = [
                 'expression' => trim($expression),
             ];
         }
@@ -71,7 +83,7 @@ class PdoQueryBuilder extends QueryBuilder
 
     public function selectRawAs(string $expression, string $alias): self
     {
-        $this->select[] = [
+        $this->querySelect[] = [
             'expression' => trim($expression),
             'alias' => $this->quoteString(trim($alias)),
         ];
@@ -81,9 +93,9 @@ class PdoQueryBuilder extends QueryBuilder
 
     public function alias(string $expression, string $alias): self
     {
-        foreach ($this->select as $i => $select) {
+        foreach ($this->querySelect as $i => $select) {
             if ($select['expression'] === $expression) {
-                $this->select[$i]['alias'] = $this->quoteString(trim($alias));
+                $this->querySelect[$i]['alias'] = $this->quoteString(trim($alias));
             }
         }
 
@@ -92,7 +104,7 @@ class PdoQueryBuilder extends QueryBuilder
 
     public function join(string $table, string $joinCondition): self
     {
-        $this->join[] = [
+        $this->queryJoin[] = [
             'table' => trim($table),
             'condition' => trim($joinCondition),
         ];
@@ -102,7 +114,7 @@ class PdoQueryBuilder extends QueryBuilder
 
     public function where(string $column, string $operator, mixed $value): self
     {
-        $this->where[] = [
+        $this->queryWhere[] = [
             'left' => trim($column),
             'right' => \is_string($value) ? trim($value) : $value,
             'operator' => trim($operator),
@@ -131,9 +143,14 @@ class PdoQueryBuilder extends QueryBuilder
         return $this->where($column, 'IS NOT', 'NULL');
     }
 
+    /**
+     * @param null|array<string,mixed> $namedParameters
+     *
+     * @return PdoQueryBuilder
+     */
     public function whereRaw(string $clause, ?array $namedParameters = null): self
     {
-        $this->where[] = [
+        $this->queryWhere[] = [
             'raw' => $clause,
             'parameters' => $namedParameters,
         ];
@@ -143,7 +160,7 @@ class PdoQueryBuilder extends QueryBuilder
 
     public function orderByAsc(string $column): self
     {
-        $this->orderBy[] = [
+        $this->queryOrderBy[] = [
             'column' => trim($column),
             'direction' => 'ASC',
         ];
@@ -153,7 +170,7 @@ class PdoQueryBuilder extends QueryBuilder
 
     public function orderByDesc(string $column): self
     {
-        $this->orderBy[] = [
+        $this->queryOrderBy[] = [
             'column' => trim($column),
             'direction' => 'DESC',
         ];
@@ -167,7 +184,7 @@ class PdoQueryBuilder extends QueryBuilder
             throw new \Exception('Illegal (negative) LIMIT value specified');
         }
 
-        $this->limit = $limit;
+        $this->queryLimit = $limit;
 
         if (null !== $offset) {
             return $this->offset($offset);
@@ -181,7 +198,7 @@ class PdoQueryBuilder extends QueryBuilder
         if ($offset < 0) {
             throw new \Exception('Illegal (negative) OFFSET value specified');
         }
-        $this->offset = $offset;
+        $this->queryLimitOffset = $offset;
 
         if (null !== $limit) {
             return $this->limit($limit);
@@ -192,7 +209,7 @@ class PdoQueryBuilder extends QueryBuilder
 
     public function findOne(): Row|bool
     {
-        $this->limit = 1;
+        $this->queryLimit = 1;
         $this->assertQueryState();
 
         return $this->queryExecuter->findOne(
@@ -201,6 +218,11 @@ class PdoQueryBuilder extends QueryBuilder
         );
     }
 
+    /**
+     * @throws Exception
+     *
+     * @return null|array<int,mixed>
+     */
     public function findMany(): ?array
     {
         $this->assertQueryState();
@@ -211,6 +233,9 @@ class PdoQueryBuilder extends QueryBuilder
         );
     }
 
+    /**
+     * @return array<string,mixed>
+     */
     protected function getQueryParameters(): array
     {
         return $this->queryParameters;
@@ -218,20 +243,20 @@ class PdoQueryBuilder extends QueryBuilder
 
     protected function buildQuerySelectExpression(): string
     {
-        if (0 === \count($this->select)) {
+        if (0 === \count($this->querySelect)) {
             return '*';
         }
 
         $selectExpression = '';
 
-        foreach ($this->select as $key => $select) {
+        foreach ($this->querySelect as $key => $select) {
             $selectExpression .= sprintf(
                 '%s%s',
                 $select['expression'],
                 isset($select['alias']) ? (' AS '.$select['alias']) : ''
             );
 
-            if ($key !== array_key_last($this->select)) {
+            if ($key !== array_key_last($this->querySelect)) {
                 $selectExpression .= ',';
             }
         }
@@ -242,7 +267,7 @@ class PdoQueryBuilder extends QueryBuilder
     protected function buildQueryJoinClause(): string
     {
         $joinClause = '';
-        foreach ($this->join as $join) {
+        foreach ($this->queryJoin as $join) {
             $joinClause .= sprintf(
                 ' JOIN %s ON %s',
                 $this->quoteExpression($join['table']),
@@ -255,18 +280,18 @@ class PdoQueryBuilder extends QueryBuilder
 
     protected function buildQueryWhereCondition(): string
     {
-        if (0 === \count($this->where)) {
+        if (0 === \count($this->queryWhere)) {
             return '';
         }
 
         $whereCondition = ' WHERE ';
 
-        foreach ($this->where as $key => $where) {
+        foreach ($this->queryWhere as $key => $where) {
             if (isset($where['raw'])) {
                 $whereCondition .= sprintf(
                     '%s%s',
                     $where['raw'],
-                    ($key !== array_key_last($this->where)) ? ' AND ' : ''
+                    ($key !== array_key_last($this->queryWhere)) ? ' AND ' : ''
                 );
                 if (null !== $where['parameters']) {
                     $this->queryParameters = array_merge($this->queryParameters, $where['parameters']);
@@ -277,7 +302,7 @@ class PdoQueryBuilder extends QueryBuilder
                     $this->quoteExpression($where['left']),
                     mb_strtoupper($where['operator']),
                     $where['right'],
-                    ($key !== array_key_last($this->where)) ? ' AND ' : ''
+                    ($key !== array_key_last($this->queryWhere)) ? ' AND ' : ''
                 );
             } else {
                 if (isset($this->queryParameters[$where['left']])) {
@@ -296,7 +321,7 @@ class PdoQueryBuilder extends QueryBuilder
                     $this->quoteExpression($where['left']),
                     $where['operator'],
                     $parameterName,
-                    ($key !== array_key_last($this->where)) ? ' AND ' : ''
+                    ($key !== array_key_last($this->queryWhere)) ? ' AND ' : ''
                 );
             }
         }
@@ -306,17 +331,17 @@ class PdoQueryBuilder extends QueryBuilder
 
     protected function buildQueryOrderByClause(): string
     {
-        if (0 === \count($this->orderBy)) {
+        if (0 === \count($this->queryOrderBy)) {
             return '';
         }
 
         $orderByClause = ' ORDER BY ';
-        foreach ($this->orderBy as $key => $orderBy) {
+        foreach ($this->queryOrderBy as $key => $orderBy) {
             $orderByClause .= sprintf(
                 '%s %s%s',
                 $this->quoteExpression($orderBy['column']),
                 $orderBy['direction'],
-                ($key !== array_key_last($this->orderBy)) ? ', ' : ''
+                ($key !== array_key_last($this->queryOrderBy)) ? ', ' : ''
             );
         }
 
@@ -332,14 +357,14 @@ class PdoQueryBuilder extends QueryBuilder
             $this->buildQueryJoinClause(),
             $this->buildQueryWhereCondition(),
             $this->buildQueryOrderByClause(),
-            (-1 !== $this->limit) ? sprintf(' LIMIT %d', $this->limit) : '',
-            (-1 !== $this->offset) ? sprintf(' OFFSET %d', $this->offset) : ''
+            (-1 !== $this->queryLimit) ? sprintf(' LIMIT %d', $this->queryLimit) : '',
+            (-1 !== $this->queryLimitOffset) ? sprintf(' OFFSET %d', $this->queryLimitOffset) : ''
         );
     }
 
     protected function assertQueryState(): void
     {
-        if (-1 !== $this->offset && -1 === $this->limit) {
+        if (-1 !== $this->queryLimitOffset && -1 === $this->queryLimit) {
             throw new \Exception('Query validation failed: OFFSET specified without LIMIT clause');
         }
     }

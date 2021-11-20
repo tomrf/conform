@@ -8,11 +8,11 @@ abstract class QueryBuilder
 {
     abstract public function forTable(string $table): self;
 
-    abstract public function select(...$params): self;
+    abstract public function select(string ...$params): self;
 
     abstract public function selectAs(string $expression, string $alias): self;
 
-    abstract public function selectRaw(...$params): self;
+    abstract public function selectRaw(string ...$params): self;
 
     abstract public function selectRawAs(string $expression, string $alias): self;
 
@@ -30,6 +30,11 @@ abstract class QueryBuilder
 
     abstract public function whereNotNull(string $column): self;
 
+    /**
+     * @param null|array<string, mixed> $namedParameters
+     *
+     * @return QueryBuilder
+     */
     abstract public function whereRaw(string $clause, ?array $namedParameters = null): self;
 
     abstract public function orderByAsc(string $column): self;
@@ -42,8 +47,14 @@ abstract class QueryBuilder
 
     abstract public function findOne(): Row|bool;
 
+    /**
+     * @return null|array<int,mixed>
+     */
     abstract public function findMany(): ?array;
 
+    /**
+     * @return array<string,mixed>
+     */
     abstract protected function getQueryParameters(): array;
 
     abstract protected function buildQuerySelectExpression(): string;

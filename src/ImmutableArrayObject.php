@@ -7,6 +7,9 @@ namespace Tomrf\Snek;
 use ArrayObject;
 use Exception;
 
+/**
+ * @extends ArrayObject<string, string>
+ */
 class ImmutableArrayObject extends ArrayObject
 {
     public function offsetSet(mixed $key, mixed $value): void

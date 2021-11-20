@@ -8,6 +8,9 @@ use RuntimeException;
 
 class DatabaseManager
 {
+    /**
+     * @var array<Connection>
+     */
     protected array $connections = [];
 
     public function addConnection(Connection $connection, string $name = 'default'): void

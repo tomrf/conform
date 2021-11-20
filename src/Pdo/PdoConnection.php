@@ -19,6 +19,12 @@ class PdoConnection extends Connection
     protected PDO $pdo;
     protected bool $isConnected = false;
 
+    /**
+     * @param Credentials         $credentials
+     * @param Factory             $queryBuilderFactory
+     * @param Factory             $queryExecuterFactory
+     * @param null|array<int,int> $options
+     */
     public function __construct(
         protected Credentials $credentials,
         protected Factory $queryBuilderFactory,

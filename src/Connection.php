@@ -10,6 +10,7 @@ abstract class Connection
 
     abstract public function getCredentials(): Credentials;
 
+    /** @return null|array<int>  */
     abstract public function getOptions(): ?array;
 
     abstract public function isConnected(): bool;

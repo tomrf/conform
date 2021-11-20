@@ -13,7 +13,7 @@ class Factory
         $this->class = $class;
     }
 
-    public function make(...$params)
+    public function make(mixed ...$params): mixed
     {
         return new $this->class(...$params);
     }

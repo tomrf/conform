@@ -18,7 +18,7 @@ class PdoCredentials extends Credentials
     /**
      * Get the value of dsn.
      */
-    public function getDsn()
+    public function getDsn(): string
     {
         return $this->dsn;
     }
@@ -26,7 +26,7 @@ class PdoCredentials extends Credentials
     /**
      * Get the value of username.
      */
-    public function getUsername()
+    public function getUsername(): ?string
     {
         return $this->username;
     }
@@ -34,7 +34,7 @@ class PdoCredentials extends Credentials
     /**
      * Get the value of password.
      */
-    public function getPassword()
+    public function getPassword(): ?string
     {
         return $this->password;
     }

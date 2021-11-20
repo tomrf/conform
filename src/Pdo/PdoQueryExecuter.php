@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tomrf\Snek\Pdo;
 
+use Exception;
 use PDO;
 use PDOStatement;
 use Tomrf\Snek\Row;
@@ -15,6 +16,13 @@ class PdoQueryExecuter
     ) {
     }
 
+    /**
+     * @param array<string,mixed> $queryParameters
+     *
+     * @throws Exception
+     *
+     * @return bool|Row
+     */
     public function findOne(string $query, array $queryParameters): Row|bool
     {
         $statement = $this->executeQuery($query, $queryParameters);
@@ -27,13 +35,25 @@ class PdoQueryExecuter
         return $row;
     }
 
-    public function findMany(string $query, array $queryParameters): ?array // @todo RowCollection
+    /**
+     * @param array<string,mixed> $queryParameters
+     *
+     * @throws Exception
+     *
+     * @return array<int,mixed>
+     */
+    public function findMany(string $query, array $queryParameters): array
     {
         $statement = $this->executeQuery($query, $queryParameters);
 
         return $this->fetchAllRows($statement);
     }
 
+    /**
+     * @param array<string,mixed> $queryParameters
+     *
+     * @throws Exception
+     */
     protected function executeQuery(string $query, array $queryParameters): PDOStatement
     {
         try {
@@ -53,6 +73,9 @@ class PdoQueryExecuter
         return $statement;
     }
 
+    /**
+     * @return array<int,mixed>
+     */
     protected function fetchAllRows(PDOStatement $statement): array
     {
         for ($rows = [];;) {
@@ -65,7 +88,7 @@ class PdoQueryExecuter
         return $rows;
     }
 
-    protected function fetchRow(PDOStatement $statement)
+    protected function fetchRow(PDOStatement $statement): Row|false
     {
         $row = $statement->fetch(PDO::FETCH_ASSOC);
 

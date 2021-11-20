@@ -11,12 +11,30 @@ abstract class Model
 {
     protected string $table;
     protected string $primaryKey = 'id';
+
+    /**
+     * @var array<string>
+     */
     protected array $protectedColumns = [];
+
+    /**
+     * @var array<string, array>
+     */
     protected array $columns = [];
 
+    /**
+     * @var array<string, mixed>
+     */
     protected array $data = [];
+
+    /**
+     * @var array<string, mixed>
+     */
     protected array $dirty = [];
 
+    /**
+     * @param array<string,mixed>|Row $data
+     */
     public function __construct(Row|array $data = [])
     {
         foreach ($data as $key => $value) {
@@ -91,6 +109,9 @@ abstract class Model
         return $this->getAny($column);
     }
 
+    /**
+     * @return array<string,mixed>
+     */
     public function getDirty(): array
     {
         return $this->dirty;
@@ -177,6 +198,9 @@ abstract class Model
         return $this->table;
     }
 
+    /**
+     * @return null|array<string,mixed>
+     */
     public function toArray(bool $includeProtectedColumns = false): ?array
     {
         $array = [];
@@ -203,7 +227,7 @@ abstract class Model
 
     public function toJson(bool $includeProtectedColumns = false): string
     {
-        return json_encode($this->toArray($includeProtectedColumns));
+        return json_encode($this->toArray($includeProtectedColumns), JSON_THROW_ON_ERROR);
     }
 
     public function persist(Connection $connection): bool
@@ -248,10 +272,13 @@ abstract class Model
 
         $columnDefinitions = $this->getColumnDefinitions($column);
         if (null !== $columnDefinitions) {
-            if (\in_array($columnDefinitions->type, ['int', 'integer'], true)) {
-                $value = (int) $value;
-            } elseif (\in_array($columnDefinitions->type, ['bool', 'boolean'], true)) {
-                $value = (bool) $value;
+            $type = $columnDefinitions->type;
+            if (null !== $type) {
+                if (\in_array($type, ['int', 'integer'], true)) {
+                    $value = (int) $value;
+                } elseif (\in_array($type, ['bool', 'boolean'], true)) {
+                    $value = (bool) $value;
+                }
             }
         }
 
@@ -262,13 +289,14 @@ abstract class Model
     {
         $definition = $this->columns[$column] ?? null;
 
-        if (null === $definition) {
-            return null;
-        }
-
-        return (object) $definition;
+        return null === $definition ? null : (object) $definition;
     }
 
+    /**
+     * @param array<string,mixed>|Row $data
+     *
+     * @return Model
+     */
     protected static function returnInstanceOfSelf(Row|array $data = []): self
     {
         $class = static::class;
