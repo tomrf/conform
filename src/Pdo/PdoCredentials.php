@@ -38,7 +38,7 @@ class PdoCredentials extends Credentials
     }
 
     public static function DSN(
-        string $driver = 'mysql',
+        string $driver,
         string $dbname,
         string $host = null,
         int $port = 3306,

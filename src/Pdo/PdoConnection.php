@@ -70,10 +70,10 @@ class PdoConnection extends Connection
         foreach ($model->getDirty() as $column => $value) {
             $parameterName = $column;
             if (isset($parameters[$parameterName])) {
-                $parameterName = $parameterName.substr(md5(random_bytes(32)), 0, 6);
+                $parameterName = $parameterName.mb_substr(md5(random_bytes(32)), 0, 6);
             }
             $query .= sprintf('`%s`=:%s', $column, $parameterName);
-            if ($column !== \array_key_last($model->getDirty())) {
+            if ($column !== array_key_last($model->getDirty())) {
                 $query .= ', ';
             }
             $parameters[$parameterName] = $value;
@@ -92,7 +92,7 @@ class PdoConnection extends Connection
             ));
         }
 
-        $modelClass = get_class($model);
+        $modelClass = \get_class($model);
 
         return new $modelClass($model->toArray(true));
     }

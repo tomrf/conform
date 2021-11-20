@@ -32,24 +32,19 @@ abstract class Model
         throw new Exception('Access violation directly setting arbitrary property on Model');
     }
 
-    public function getDirty(): array
-    {
-        return $this->dirty;
-    }
-
     public static function fromRow(Row $row): self
     {
         return self::returnInstanceOfSelf($row);
     }
 
-    public static function fromObject(Model $modelObject): self
+    public static function fromObject(self $modelObject): self
     {
         return self::returnInstanceOfSelf($modelObject->toArray());
     }
 
     public static function fromConnectionById(Connection $connection, int|string $id, ?string $column = null): self
     {
-        $class = get_called_class();
+        $class = static::class;
         $modelInstance = new $class();
 
         $table = $modelInstance->table;
@@ -95,6 +90,11 @@ abstract class Model
         return $this->getAny($column);
     }
 
+    public function getDirty(): array
+    {
+        return $this->dirty;
+    }
+
     public function getProtected(string $protectedColumn): mixed
     {
         if (!$this->isProtected($protectedColumn)) {
@@ -136,7 +136,7 @@ abstract class Model
             ));
         }
 
-        $valueType = gettype($value);
+        $valueType = \gettype($value);
         $columnType = $this->columns[$column]['type'] ?? null;
 
         if (null !== $columnType && $valueType !== $columnType) {
@@ -158,12 +158,12 @@ abstract class Model
             return isset($this->dirty[$column]) ? true : false;
         }
 
-        return count($this->dirty) ? true : false;
+        return \count($this->dirty) ? true : false;
     }
 
     public function isProtected(string $column): bool
     {
-        return in_array($column, $this->protectedColumns);
+        return \in_array($column, $this->protectedColumns, true);
     }
 
     public function isPrimaryKey(string $column): bool
@@ -176,7 +176,7 @@ abstract class Model
         return $this->table;
     }
 
-    // @todo fix move to connection
+    /** @todo fix move to connection */
     public function insert(bool $insertIgnore = false): bool
     {
         if (null === $this->connection) {
@@ -191,7 +191,7 @@ abstract class Model
         }
 
         if (method_exists($this, 'onBeforePersist')) {
-            call_user_func([$this, 'onBeforePersist']);
+            \call_user_func([$this, 'onBeforePersist']);
         }
 
         // build query
@@ -207,12 +207,12 @@ abstract class Model
             // param
             $paramName = $column;
             if (isset($params[$paramName])) {
-                $paramName = $paramName.substr(md5(random_bytes(32)), 0, 6);
+                $paramName = $paramName.mb_substr(md5(random_bytes(32)), 0, 6);
             }
             $params[$paramName] = $value;
             $values .= sprintf(':%s', $paramName);
 
-            if ($column !== \array_key_last($this->dirty)) {
+            if ($column !== array_key_last($this->dirty)) {
                 $query .= ',';
                 $values .= ',';
             } else {
@@ -255,7 +255,7 @@ abstract class Model
 
     public function toJson(bool $includeProtectedColumns = false): string
     {
-        return \json_encode($this->toArray($includeProtectedColumns));
+        return json_encode($this->toArray($includeProtectedColumns));
     }
 
     protected function getAny(string $column): mixed
@@ -268,10 +268,10 @@ abstract class Model
 
         $columnDefinitions = $this->getColumnDefinitions($column);
         if (null !== $columnDefinitions) {
-            if (in_array($columnDefinitions->type, ['int', 'integer'])) {
-                $value = \intval($value);
-            } elseif (in_array($columnDefinitions->type, ['bool', 'boolean'])) {
-                $value = \boolval($value);
+            if (\in_array($columnDefinitions->type, ['int', 'integer'], true)) {
+                $value = (int) $value;
+            } elseif (\in_array($columnDefinitions->type, ['bool', 'boolean'], true)) {
+                $value = (bool) $value;
             }
         }
 
@@ -281,6 +281,7 @@ abstract class Model
     protected function getColumnDefinitions(string $column): ?object
     {
         $definition = $this->columns[$column] ?? null;
+
         if (null === $definition) {
             return null;
         }
@@ -290,7 +291,7 @@ abstract class Model
 
     protected static function returnInstanceOfSelf(Row|array $data = []): self
     {
-        $class = get_called_class();
+        $class = static::class;
 
         return new $class($data);
     }

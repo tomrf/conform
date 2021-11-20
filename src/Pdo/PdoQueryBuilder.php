@@ -28,14 +28,14 @@ class PdoQueryBuilder extends QueryBuilder
     ) {
     }
 
-    public function forTable(string $table): PdoQueryBuilder
+    public function forTable(string $table): self
     {
         $this->table = $table;
 
         return $this;
     }
 
-    public function select(...$params): PdoQueryBuilder
+    public function select(...$params): self
     {
         foreach ($params as $column) {
             $this->select[] = [
@@ -46,7 +46,7 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    public function selectAs(string $expression, string $alias): PdoQueryBuilder
+    public function selectAs(string $expression, string $alias): self
     {
         $this->select[] = [
             'expression' => $this->quoteExpression(trim($expression)),
@@ -56,7 +56,7 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    public function selectRaw(...$params): PdoQueryBuilder
+    public function selectRaw(...$params): self
     {
         foreach ($params as $expression) {
             $this->select[] = [
@@ -67,7 +67,7 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    public function selectRawAs(string $expression, string $alias): PdoQueryBuilder
+    public function selectRawAs(string $expression, string $alias): self
     {
         $this->select[] = [
             'expression' => trim($expression),
@@ -77,7 +77,7 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    public function alias(string $expression, string $alias): PdoQueryBuilder
+    public function alias(string $expression, string $alias): self
     {
         foreach ($this->select as $i => $select) {
             if ($select['expression'] === $expression) {
@@ -88,7 +88,7 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    public function join(string $table, string $joinCondition): PdoQueryBuilder
+    public function join(string $table, string $joinCondition): self
     {
         $this->join[] = [
             'table' => trim($table),
@@ -98,38 +98,38 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    public function where(string $column, string $operator, mixed $value): PdoQueryBuilder
+    public function where(string $column, string $operator, mixed $value): self
     {
         $this->where[] = [
             'left' => trim($column),
-            'right' => is_string($value) ? trim($value) : $value,
+            'right' => \is_string($value) ? trim($value) : $value,
             'operator' => trim($operator),
         ];
 
         return $this;
     }
 
-    public function whereEqual(string $column, mixed $value): PdoQueryBuilder
+    public function whereEqual(string $column, mixed $value): self
     {
         return $this->where($column, '=', $value);
     }
 
-    public function whereNotEqual(string $column, mixed $value): PdoQueryBuilder
+    public function whereNotEqual(string $column, mixed $value): self
     {
         return $this->where($column, '!=', $value);
     }
 
-    public function whereNull(string $column): PdoQueryBuilder
+    public function whereNull(string $column): self
     {
         return $this->where($column, 'IS', 'NULL');
     }
 
-    public function whereNotNull(string $column): PdoQueryBuilder
+    public function whereNotNull(string $column): self
     {
         return $this->where($column, 'IS NOT', 'NULL');
     }
 
-    public function whereRaw(string $clause, ?array $namedParameters = null): PdoQueryBuilder
+    public function whereRaw(string $clause, ?array $namedParameters = null): self
     {
         $this->where[] = [
             'raw' => $clause,
@@ -139,7 +139,7 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    public function orderByAsc(string $column): PdoQueryBuilder
+    public function orderByAsc(string $column): self
     {
         $this->orderBy[] = [
             'column' => trim($column),
@@ -149,7 +149,7 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    public function orderByDesc(string $column): PdoQueryBuilder
+    public function orderByDesc(string $column): self
     {
         $this->orderBy[] = [
             'column' => trim($column),
@@ -159,7 +159,7 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    public function limit(int $limit, ?int $offset = null): PdoQueryBuilder
+    public function limit(int $limit, ?int $offset = null): self
     {
         if ($limit < 0) {
             throw new \Exception('Illegal (negative) LIMIT value specified');
@@ -174,7 +174,7 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    public function offset(int $offset, ?int $limit = null): PdoQueryBuilder
+    public function offset(int $offset, ?int $limit = null): self
     {
         if ($offset < 0) {
             throw new \Exception('Illegal (negative) OFFSET value specified');
@@ -216,7 +216,7 @@ class PdoQueryBuilder extends QueryBuilder
 
     protected function buildQuerySelectExpression(): string
     {
-        if (0 === count($this->select)) {
+        if (0 === \count($this->select)) {
             return '*';
         }
 
@@ -229,7 +229,7 @@ class PdoQueryBuilder extends QueryBuilder
                 isset($select['alias']) ? (' AS '.$select['alias']) : ''
             );
 
-            if ($key !== \array_key_last($this->select)) {
+            if ($key !== array_key_last($this->select)) {
                 $selectExpression .= ',';
             }
         }
@@ -253,7 +253,7 @@ class PdoQueryBuilder extends QueryBuilder
 
     protected function buildQueryWhereCondition(): string
     {
-        if (0 === count($this->where)) {
+        if (0 === \count($this->where)) {
             return '';
         }
 
@@ -264,18 +264,18 @@ class PdoQueryBuilder extends QueryBuilder
                 $whereCondition .= sprintf(
                     '%s%s',
                     $where['raw'],
-                    ($key !== \array_key_last($this->where)) ? ' AND ' : ''
+                    ($key !== array_key_last($this->where)) ? ' AND ' : ''
                 );
                 if (null !== $where['parameters']) {
                     $this->queryParameters = array_merge($this->queryParameters, $where['parameters']);
                 }
-            } elseif ('IS' === substr(strtoupper($where['operator']), 0, 2)) {
+            } elseif ('IS' === mb_substr(mb_strtoupper($where['operator']), 0, 2)) {
                 $whereCondition .= sprintf(
                     '%s %s %s%s',
                     $this->quoteExpression($where['left']),
-                    strtoupper($where['operator']),
+                    mb_strtoupper($where['operator']),
                     $where['right'],
-                    ($key !== \array_key_last($this->where)) ? ' AND ' : ''
+                    ($key !== array_key_last($this->where)) ? ' AND ' : ''
                 );
             } else {
                 if (isset($this->queryParameters[$where['left']])) {
@@ -294,7 +294,7 @@ class PdoQueryBuilder extends QueryBuilder
                     $this->quoteExpression($where['left']),
                     $where['operator'],
                     $parameterName,
-                    ($key !== \array_key_last($this->where)) ? ' AND ' : ''
+                    ($key !== array_key_last($this->where)) ? ' AND ' : ''
                 );
             }
         }
@@ -304,7 +304,7 @@ class PdoQueryBuilder extends QueryBuilder
 
     protected function buildQueryOrderByClause(): string
     {
-        if (0 === count($this->orderBy)) {
+        if (0 === \count($this->orderBy)) {
             return '';
         }
 
@@ -314,7 +314,7 @@ class PdoQueryBuilder extends QueryBuilder
                 '%s %s%s',
                 $this->quoteExpression($orderBy['column']),
                 $orderBy['direction'],
-                ($key !== \array_key_last($this->orderBy)) ? ', ' : ''
+                ($key !== array_key_last($this->orderBy)) ? ', ' : ''
             );
         }
 
@@ -351,8 +351,8 @@ class PdoQueryBuilder extends QueryBuilder
     {
         $quotedExpression = '';
 
-        if (\mb_strstr($expression, ' ')) {
-            $parts = \explode(' ', $expression);
+        if (mb_strstr($expression, ' ')) {
+            $parts = explode(' ', $expression);
 
             foreach ($parts as $part) {
                 $quotedExpression .= $this->quoteExpression($part);
@@ -361,12 +361,12 @@ class PdoQueryBuilder extends QueryBuilder
             return $quotedExpression;
         }
 
-        if (\mb_strstr($expression, '.')) {
-            $parts = \explode('.', $expression);
+        if (mb_strstr($expression, '.')) {
+            $parts = explode('.', $expression);
 
             foreach ($parts as $key => $part) {
                 $quotedExpression .= $this->quoteExpression($part);
-                if ($key !== \array_key_last($parts)) {
+                if ($key !== array_key_last($parts)) {
                     $quotedExpression .= '.';
                 }
             }
@@ -386,7 +386,7 @@ class PdoQueryBuilder extends QueryBuilder
 
     protected function isExpressionQuoted(string $expression): bool
     {
-        $offsetEnd = -1 + \mb_strlen($expression);
+        $offsetEnd = -1 + mb_strlen($expression);
         if ('`' === $expression[0] && '`' === $expression[$offsetEnd]) {
             return true;
         }
@@ -396,7 +396,7 @@ class PdoQueryBuilder extends QueryBuilder
 
     protected function isValidColumnName(string $name): bool
     {
-        if (!\preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $name)) {
+        if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $name)) {
             return false;
         }
 
