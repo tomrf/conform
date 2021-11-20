@@ -177,59 +177,6 @@ abstract class Model
         return $this->table;
     }
 
-    /** @todo fix move to connection */
-    public function insert(bool $insertIgnore = false): bool
-    {
-        if (null === $this->connection) {
-            throw new RuntimeException('Cannot save model: no database connection supplied on model construction');
-        }
-
-        // set defaults
-        foreach ($this->columns as $column => $attributes) {
-            if (isset($attributes['default']) && !$this->has($column)) {
-                $this->dirty[$column] = $attributes['default'];
-            }
-        }
-
-        if (method_exists($this, 'onBeforePersist')) {
-            \call_user_func([$this, 'onBeforePersist']);
-        }
-
-        // build query
-        $params = [];
-        $query = sprintf('INSERT INTO `%s` (', $this->table);
-        if (true === $insertIgnore) {
-            $query = sprintf('INSERT IGNORE INTO `%s` (', $this->table);
-        }
-        $values = '(';
-        foreach ($this->dirty as $column => $value) {
-            $query .= sprintf('`%s`', $column);
-
-            // param
-            $paramName = $column;
-            if (isset($params[$paramName])) {
-                $paramName = $paramName.mb_substr(md5(random_bytes(32)), 0, 6);
-            }
-            $params[$paramName] = $value;
-            $values .= sprintf(':%s', $paramName);
-
-            if ($column !== array_key_last($this->dirty)) {
-                $query .= ',';
-                $values .= ',';
-            } else {
-                $values .= ')';
-                $query .= ') VALUES '.$values;
-            }
-        }
-
-        /** @var PdoConnection */
-        $connection = $this->connection;
-        $statement = $connection->getPdo()->prepare($query);
-        $statement->execute($params);
-
-        return true;
-    }
-
     public function toArray(bool $includeProtectedColumns = false): ?array
     {
         $array = [];
