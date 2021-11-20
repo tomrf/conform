@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tomrf\Snek;
 
+/**
+ * @ignore
+ */
 class Factory
 {
     protected string $class;

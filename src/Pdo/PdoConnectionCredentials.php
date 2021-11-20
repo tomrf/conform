@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tomrf\Snek\Pdo;
 
-use Tomrf\Snek\Credentials;
+use Tomrf\Snek\ConnectionCredentials;
 
-class PdoCredentials extends Credentials
+class PdoConnectionCredentials extends ConnectionCredentials
 {
     public function __construct(
         protected string $dsn,

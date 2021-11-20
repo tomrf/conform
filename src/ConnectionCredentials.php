@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tomrf\Snek;
 
-abstract class Credentials
+abstract class ConnectionCredentials
 {
     abstract public function getDsn(): string;
 

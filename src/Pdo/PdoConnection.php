@@ -9,7 +9,7 @@ use PDOException;
 use PDOStatement;
 use RuntimeException;
 use Tomrf\Snek\Connection;
-use Tomrf\Snek\Credentials;
+use Tomrf\Snek\ConnectionCredentials;
 use Tomrf\Snek\Factory;
 use Tomrf\Snek\Model;
 use Tomrf\Snek\QueryBuilder;
@@ -20,13 +20,13 @@ class PdoConnection extends Connection
     protected bool $isConnected = false;
 
     /**
-     * @param Credentials         $credentials
-     * @param Factory             $queryBuilderFactory
-     * @param Factory             $queryExecuterFactory
-     * @param null|array<int,int> $options
+     * @param ConnectionCredentials $credentials
+     * @param Factory               $queryBuilderFactory
+     * @param Factory               $queryExecuterFactory
+     * @param null|array<int,int>   $options
      */
     public function __construct(
-        protected Credentials $credentials,
+        protected ConnectionCredentials $credentials,
         protected Factory $queryBuilderFactory,
         protected Factory $queryExecuterFactory,
         protected ?array $options = [
@@ -110,7 +110,7 @@ class PdoConnection extends Connection
         return $this->pdo;
     }
 
-    public function getCredentials(): Credentials
+    public function getCredentials(): ConnectionCredentials
     {
         return $this->credentials;
     }

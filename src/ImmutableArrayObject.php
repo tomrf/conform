@@ -8,6 +8,7 @@ use ArrayObject;
 use Exception;
 
 /**
+ * @ignore
  * @extends ArrayObject<string, string>
  */
 class ImmutableArrayObject extends ArrayObject

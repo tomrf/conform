@@ -6,7 +6,7 @@ namespace Tomrf\Snek;
 
 use RuntimeException;
 
-class DatabaseManager
+class ConnectionManager
 {
     /**
      * @var array<Connection>

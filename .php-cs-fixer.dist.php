@@ -17,6 +17,7 @@ return $config->setRules([
     '@PHP80Migration' => true,
     '@PHP80Migration:risky' => true,
     'mb_str_functions' => true,
+    'phpdoc_no_package' => false,
 ])
     ->setFinder($finder)
 ;

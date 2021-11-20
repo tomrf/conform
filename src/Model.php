@@ -23,33 +23,52 @@ abstract class Model
     protected array $columns = [];
 
     /**
+     * @ignore
+     *
      * @var array<string, mixed>
      */
     protected array $data = [];
 
     /**
+     * @ignore
+     *
      * @var array<string, mixed>
      */
     protected array $dirty = [];
 
     /**
+     * @ignore
+     *
      * @param array<string,mixed>|Row $data
      */
     public function __construct(Row|array $data = [])
     {
+        $this->setDefaults();
+
         foreach ($data as $key => $value) {
             $this->data[$key] = $value;
         }
     }
 
+    /**
+     * @ignore
+     */
     public function __get(mixed $name): mixed
     {
         throw new Exception('Access violation directly getting arbitrary property from Model');
     }
 
+    /**
+     * @ignore
+     */
     public function __set(mixed $name, mixed $value): void
     {
         throw new Exception('Access violation directly setting arbitrary property on Model');
+    }
+
+    public static function new(): self
+    {
+        return self::returnInstanceOfSelf();
     }
 
     public static function fromRow(Row $row): self
@@ -243,6 +262,18 @@ abstract class Model
         return $this->onAfterPersist();
     }
 
+    protected function setDefaults(): void
+    {
+        foreach ($this->columns as $column => $attributes) {
+            if (isset($attributes['default'])) {
+                $this->data[$column] = $attributes['default'];
+            }
+        }
+    }
+
+    /**
+     * @ignore
+     */
     protected static function getPrimaryKeyName(): string
     {
         $class = static::class;
@@ -253,6 +284,9 @@ abstract class Model
         return $primaryKeyColumn;
     }
 
+    /**
+     * @ignore
+     */
     protected function flushDirty(): void
     {
         foreach ($this->dirty as $key => $value) {
@@ -262,6 +296,9 @@ abstract class Model
         $this->dirty = [];
     }
 
+    /**
+     * @ignore
+     */
     protected function getAny(string $column): mixed
     {
         $value = $this->dirty[$column] ?? $this->data[$column] ?? null; // @todo throw exception
@@ -285,6 +322,9 @@ abstract class Model
         return $value;
     }
 
+    /**
+     * @ignore
+     */
     protected function getColumnDefinitions(string $column): ?object
     {
         $definition = $this->columns[$column] ?? null;
@@ -293,7 +333,9 @@ abstract class Model
     }
 
     /**
-     * @param array<string,mixed>|Row $data
+     * @ignore
+     *
+     * @param array<string,mixed>|Row $data *
      *
      * @return Model
      */
@@ -314,6 +356,9 @@ abstract class Model
         return true;
     }
 
+    /**
+     * @ignore
+     */
     private static function getTableName(): string
     {
         $class = static::class;
