@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tomrf\Snek;
 
 use Exception;
@@ -42,25 +44,24 @@ abstract class Model
         return self::returnInstanceOfSelf($modelObject->toArray());
     }
 
-    public static function fromConnectionById(Connection $connection, int|string $id, ?string $column = null): self
+    public static function byPrimaryKey(Connection $connection, int|string $id): self
     {
-        $class = static::class;
-        $modelInstance = new $class();
+        return self::byColumn($connection, $id, self::getPrimaryKeyName());
+    }
 
-        $table = $modelInstance->table;
-        $idColumn = $column ?? $modelInstance->primaryKey;
-
+    public static function byColumn(Connection $connection, int|string $id, string $column): self
+    {
         $row = $connection->getQueryBuilder()
-            ->forTable($table)
-            ->whereEqual($idColumn, $id)
+            ->forTable(self::getTableName())
+            ->whereEqual($column, $id)
             ->findOne()
         ;
 
         if (false === $row) {
             throw new RuntimeException(sprintf(
                 'Could not create instance of model "%s" from database connection: no match for column "%s" with value "%s"',
-                $class,
-                $idColumn,
+                self::getTableName(),
+                $column,
                 (string) $id
             ));
         }
@@ -258,6 +259,38 @@ abstract class Model
         return json_encode($this->toArray($includeProtectedColumns));
     }
 
+    public function persist(Connection $connection): bool
+    {
+        if (false === $this->onBeforePersist()) {
+            // @todo throw ?
+            return false;
+        }
+
+        $connection->persist($this);
+        $this->flushDirty();
+
+        return $this->onAfterPersist();
+    }
+
+    protected static function getPrimaryKeyName(): string
+    {
+        $class = static::class;
+        $modelInstance = new $class();
+        $primaryKeyColumn = $modelInstance->primaryKey;
+        unset($modelInstance);
+
+        return $primaryKeyColumn;
+    }
+
+    protected function flushDirty(): void
+    {
+        foreach ($this->dirty as $key => $value) {
+            $this->data[$key] = $value;
+        }
+
+        $this->dirty = [];
+    }
+
     protected function getAny(string $column): mixed
     {
         $value = $this->dirty[$column] ?? $this->data[$column] ?? null; // @todo throw exception
@@ -294,5 +327,25 @@ abstract class Model
         $class = static::class;
 
         return new $class($data);
+    }
+
+    protected function onBeforePersist(): bool
+    {
+        return true;
+    }
+
+    protected function onAfterPersist(): bool
+    {
+        return true;
+    }
+
+    private static function getTableName(): string
+    {
+        $class = static::class;
+        $modelInstance = new $class();
+        $tableName = $modelInstance->table;
+        unset($modelInstance);
+
+        return $tableName;
     }
 }

@@ -1,17 +1,11 @@
 general
 ----------------
-hide protected columns from dump() etc?
-
-
-ActualModel extends Model, ModelFactory..?
-
+* strict mode
 
 
 query builder
 -------------------
 findOne/ManyOrDie()
-
-
 
 model
 ----------

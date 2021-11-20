@@ -22,10 +22,12 @@ class User extends \Tomrf\Snek\Model
         ],
     ];
 
-    protected function onBeforePersist(): void
+    protected function onBeforePersist(): bool
     {
         if (null === $this->get('ref')) {
             $this->set('ref', md5(random_bytes(32)));
         }
+
+        return true;
     }
 }
