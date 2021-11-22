@@ -127,12 +127,16 @@ class PdoConnection extends Connection
 
     protected function connect(): void
     {
-        $this->pdo = new PDO(
-            $this->credentials->getDsn(),
-            $this->credentials->getUsername(),
-            $this->credentials->getPassword(),
-            $this->options
-        );
+        try {
+            $this->pdo = new PDO(
+                $this->credentials->getDsn(),
+                $this->credentials->getUsername(),
+                $this->credentials->getPassword(),
+                $this->options
+            );
+        } catch (\PDOException $e) {
+            throw new RuntimeException('Unable to connecto to database: '.$e->getMessage());
+        }
 
         $this->isConnected = true;
     }

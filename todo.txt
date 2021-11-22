@@ -1,6 +1,7 @@
 general
 ----------------
 * strict mode
+* model refresh()
 
 
 query builder

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tomrf\Snek;
 
 use Exception;
-use RuntimeException;
 
 abstract class Model
 {
@@ -55,7 +54,7 @@ abstract class Model
      */
     public function __get(mixed $name): mixed
     {
-        throw new Exception('Access violation directly getting arbitrary property from Model');
+        throw new Exception('Access violation directly getting arbitrary property from Model: '.$name);
     }
 
     /**
@@ -63,7 +62,7 @@ abstract class Model
      */
     public function __set(mixed $name, mixed $value): void
     {
-        throw new Exception('Access violation directly setting arbitrary property on Model');
+        throw new Exception('Access violation directly setting arbitrary property on Model: '.$name);
     }
 
     public static function new(): self
@@ -76,34 +75,9 @@ abstract class Model
         return self::returnInstanceOfSelf($row);
     }
 
-    public static function fromObject(self $modelObject): self
+    public static function fromObject(self|Model $modelObject): self
     {
         return self::returnInstanceOfSelf($modelObject->toArray());
-    }
-
-    public static function byPrimaryKey(Connection $connection, int|string $id): self
-    {
-        return self::byColumn($connection, $id, self::getPrimaryKeyName());
-    }
-
-    public static function byColumn(Connection $connection, int|string $id, string $column): self
-    {
-        $row = $connection->getQueryBuilder()
-            ->forTable(self::getTableName())
-            ->whereEqual($column, $id)
-            ->findOne()
-        ;
-
-        if (false === $row) {
-            throw new RuntimeException(sprintf(
-                'Could not create instance of model "%s" from database connection: no match for column "%s" with value "%s"',
-                self::getTableName(),
-                $column,
-                (string) $id
-            ));
-        }
-
-        return self::fromRow($row);
     }
 
     public function has(string $column): bool
@@ -249,19 +223,6 @@ abstract class Model
         return json_encode($this->toArray($includeProtectedColumns), JSON_THROW_ON_ERROR);
     }
 
-    public function persist(Connection $connection): bool
-    {
-        if (false === $this->onBeforePersist()) {
-            // @todo throw ?
-            return false;
-        }
-
-        $connection->persist($this);
-        $this->flushDirty();
-
-        return $this->onAfterPersist();
-    }
-
     protected function setDefaults(): void
     {
         foreach ($this->columns as $column => $attributes) {
@@ -346,20 +307,10 @@ abstract class Model
         return new $class($data);
     }
 
-    protected function onBeforePersist(): bool
-    {
-        return true;
-    }
-
-    protected function onAfterPersist(): bool
-    {
-        return true;
-    }
-
     /**
      * @ignore
      */
-    private static function getTableName(): string
+    protected static function getTableName(): string
     {
         $class = static::class;
         $modelInstance = new $class();
