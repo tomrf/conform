@@ -23,6 +23,22 @@ class ActiveModel extends Model
         }
     }
 
+    public function __sleep()
+    {
+        $array = [];
+
+        $this->connection = null;
+
+        $reflection = new ReflectionClass($this);
+        $properties = $reflection->getProperties();
+
+        foreach ($properties as $property) {
+            $array[] = $property->name;
+        }
+
+        return $array;
+    }
+
     // public function __invoke(string $modelClass): QueryBuilder
     // {
     //     /** @var ActiveModel */
