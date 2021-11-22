@@ -103,29 +103,37 @@ class ActiveModel extends Model
         return $this->onAfterPersist();
     }
 
-    protected function belongsTo(string $modelClass): QueryBuilder
+    protected function belongsTo(string $modelClass, string $ownColumn = null): QueryBuilder
     {
         $reflection = new ReflectionClass($modelClass);
 
         /** @var Model */
         $model = $reflection->newInstanceWithoutConstructor();
 
+        if (null === $ownColumn) {
+            $ownColumn = $model->getTable().'_id';
+        }
+
         return $this->connection->getQueryBuilder()
             ->forTable($model->getTable())
-            ->whereEqual('id', $this->getAny($model->getTable().'_id'))
+            ->whereEqual('id', $this->getAny($ownColumn))
         ;
     }
 
-    protected function hasOne(string $modelClass): QueryBuilder
+    protected function hasOne(string $modelClass, string $foreignColumn = null): QueryBuilder
     {
         $reflection = new ReflectionClass($modelClass);
 
         /** @var Model */
         $model = $reflection->newInstanceWithoutConstructor();
 
+        if (null === $foreignColumn) {
+            $foreignColumn = $this->getTable().'_id';
+        }
+
         return $this->connection->getQueryBuilder()
             ->forTable($model->getTable())
-            ->whereEqual($this->getTable().'_id', $this->getPrimaryKey())
+            ->whereEqual($foreignColumn, $this->getPrimaryKey())
         ;
     }
 
