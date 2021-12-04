@@ -59,7 +59,7 @@ class ActiveModel extends Model
 
     public static function fromObject(self|Model $modelObject, ?Connection $connection = null): self
     {
-        return self::returnInstanceOfSelf($modelObject->toArray(), $connection);
+        return self::returnInstanceOfSelf($modelObject->toArray(true), $connection);
     }
 
     public function setConnection(Connection $connection): void
@@ -76,7 +76,7 @@ class ActiveModel extends Model
 
     public static function byPrimaryKey(Connection $connection, int|string $id): self
     {
-        return self::byColumn($connection, $id, self::getPrimaryKeyName());
+        return self::byColumn($connection, (string) $id, self::getPrimaryKeyName());
     }
 
     public static function byColumn(Connection $connection, string $column, int|string $id): self
