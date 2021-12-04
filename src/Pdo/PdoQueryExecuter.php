@@ -7,9 +7,10 @@ namespace Tomrf\Snek\Pdo;
 use Exception;
 use PDO;
 use PDOStatement;
+use Tomrf\Snek\QueryExecuter;
 use Tomrf\Snek\Row;
 
-class PdoQueryExecuter
+class PdoQueryExecuter extends QueryExecuter
 {
     public function __construct(
         protected PdoConnection $connection,
