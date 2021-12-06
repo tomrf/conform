@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek;
+namespace Tomrf\Snek\Abstract;
 
 use PDOStatement;
+use Tomrf\Snek\Row;
 
 abstract class QueryExecuter
 {

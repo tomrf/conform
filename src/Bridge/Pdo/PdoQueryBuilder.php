@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tomrf\Snek\Bridge\Pdo;
 
 use Exception;
-use Tomrf\Snek\QueryBuilder;
+use Tomrf\Snek\Abstract\QueryBuilder;
 use Tomrf\Snek\Row;
 
 class PdoQueryBuilder extends QueryBuilder

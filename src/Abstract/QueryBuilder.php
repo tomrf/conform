@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek;
+namespace Tomrf\Snek\Abstract;
+
+use Tomrf\Snek\Row;
 
 abstract class QueryBuilder
 {

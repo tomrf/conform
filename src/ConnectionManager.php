@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tomrf\Snek;
 
 use RuntimeException;
+use Tomrf\Snek\Abstract\Connection;
 
 class ConnectionManager
 {

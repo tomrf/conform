@@ -7,7 +7,7 @@ namespace Tomrf\Snek\Bridge\Pdo;
 use Exception;
 use PDO;
 use PDOStatement;
-use Tomrf\Snek\QueryExecuter;
+use Tomrf\Snek\Abstract\QueryExecuter;
 use Tomrf\Snek\Row;
 
 class PdoQueryExecuter extends QueryExecuter

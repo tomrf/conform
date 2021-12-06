@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tomrf\Snek\Interface;
 
 use Tomrf\Snek\ActiveRecord\Model;
-use Tomrf\Snek\ConnectionCredentials;
-use Tomrf\Snek\QueryBuilder;
+use Tomrf\Snek\Abstract\ConnectionCredentials;
+use Tomrf\Snek\Abstract\QueryBuilder;
 
 /** @package Connection */
 interface Connection

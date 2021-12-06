@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Model;
 
 use Tomrf\Snek\ActiveRecord\ActiveModel;
-use Tomrf\Snek\Connection;
-use Tomrf\Snek\QueryBuilder;
+use Tomrf\Snek\Abstract\Connection;
+use Tomrf\Snek\Abstract\QueryBuilder;
 
 class User extends ActiveModel
 {

@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek;
+namespace Tomrf\Snek\Abstract;
 
-abstract class ConnectionCredentials implements Interface\ConnectionCredentials
+use Tomrf\Snek\Interface\ConnectionCredentials as ConnectionCredentialsInterface;
+
+abstract class ConnectionCredentials implements ConnectionCredentialsInterface
 {
     abstract public function getDsn(): string;
 

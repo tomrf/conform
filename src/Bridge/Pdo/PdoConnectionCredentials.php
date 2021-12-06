@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tomrf\Snek\Bridge\Pdo;
 
-use Tomrf\Snek\ConnectionCredentials;
+use Tomrf\Snek\Abstract\ConnectionCredentials;
 
 class PdoConnectionCredentials extends ConnectionCredentials
 {

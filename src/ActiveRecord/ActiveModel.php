@@ -6,8 +6,8 @@ namespace Tomrf\Snek\ActiveRecord;
 
 use ReflectionClass;
 use RuntimeException;
-use Tomrf\Snek\Connection;
-use Tomrf\Snek\QueryBuilder;
+use Tomrf\Snek\Abstract\Connection;
+use Tomrf\Snek\Abstract\QueryBuilder;
 use Tomrf\Snek\Row;
 
 class ActiveModel extends Model
