@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tomrf\Conform;
+
+use ArrayObject;
+use Exception;
+
+/**
+ * @ignore
+ * @extends ArrayObject<string, string>
+ */
+class ImmutableArrayObject extends ArrayObject
+{
+    public function offsetSet(mixed $key, mixed $value): void
+    {
+        $this->accessViolation();
+    }
+
+    public function offsetUnset(mixed $key): void
+    {
+        $this->accessViolation();
+    }
+
+    protected function accessViolation(): void
+    {
+        throw new Exception('Access violation modifying immutable Row');
+    }
+}

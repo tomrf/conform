@@ -1,0 +1,32 @@
+{
+    "name": "tomrf/conform",
+    "description": "ORM; query builder and active record implementation using PDO",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Tomrf\\Conform\\": "src/"
+        }
+    },
+    "minimum-stability": "stable",
+    "require": {
+        "php": "8.* || 7.*"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^0.12",
+        "friendsofphp/php-cs-fixer": "3.3.2",
+        "roave/security-advisories": "dev-latest",
+        "phpunit/phpunit": "^9.5"
+    },
+    "scripts": {
+        "cs-fixer": [
+            "php-cs-fixer fix --diff --verbose --allow-risky=yes src/ ; rm .php-cs-fixer.cache"
+        ],
+        "phpstan": [
+            "phpstan analyze --level 7 src/"
+        ],
+        "phpunit": [
+            "phpunit"
+        ]
+    }
+}
