@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Model;
 
-class Customer extends \Tomrf\Snek\Model
+class Customer extends \Tomrf\Snek\ActiveRecord\Model
 {
     protected string $table = 'customer';
     protected string $primaryKey = 'id';

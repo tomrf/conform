@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Model;
 
-use Tomrf\Snek\ActiveModel;
+use Tomrf\Snek\ActiveRecord\ActiveModel;
 use Tomrf\Snek\Connection;
 use Tomrf\Snek\QueryBuilder;
 

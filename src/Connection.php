@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tomrf\Snek;
 
+use Tomrf\Snek\ActiveRecord\Model;
+
 /** @package Connection */
-abstract class Connection
+abstract class Connection implements Interface\Connection
 {
     abstract public function getQueryBuilder(): QueryBuilder;
 
@@ -19,6 +21,4 @@ abstract class Connection
     abstract public function queryTable(string $tableName): QueryBuilder;
 
     abstract public function persist(Model $model): Model;
-
-    abstract protected function connect(): void;
 }

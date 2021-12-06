@@ -2,7 +2,7 @@
 
 namespace Model;
 
-class Post extends \Tomrf\Snek\Model
+class Post extends \Tomrf\Snek\ActiveRecord\Model
 {
     protected string $table = 'post';
     protected string $primaryKey = 'id';
