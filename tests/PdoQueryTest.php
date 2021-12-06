@@ -33,33 +33,35 @@ final class PdoQueryTest extends TestCase
         self::$connection->getPdo()->exec($sql);
     }
 
-    public function testIsConnected(): void
+    public function test_connection_is_connected(): void
     {
         static::assertTrue(self::$connection->isConnected());
     }
 
-    public function testSelectFindOneReturnsRow(): void
+    public function test_select_all_find_one_returns_instance_of_row(): void
     {
         $row = $this->queryTestCountries()->select('*')->findOne();
         static::assertInstanceOf(Row::class, $row);
     }
 
-    public function testSelectFindManyReturnsArrayOfRows(): void
+    public function test_select_all_find_many_returns_array_of_row(): void
     {
-        $rows = $this->queryTestCountries()->findMany();
+        $rows = $this->queryTestCountries()->select('*')->findMany();
 
         static::assertIsArray($rows);
         static::assertContainsOnlyInstancesOf(Row::class, $rows);
     }
 
-    public function testSelectFindManyLimitOneReturnsArrayOfOneRow(): void
+    public function test_select_find_many_limit_1_returns_array_of_one_row(): void
     {
         $rows = $this->queryTestCountries()->limit(1)->findMany();
 
+        static::assertIsArray($rows);
         static::assertCount(1, $rows);
+        static::assertContainsOnlyInstancesOf(Row::class, $rows);
     }
 
-    public function testUnspecifiedSelectReturnsAllColumns(): void
+    public function test_unspecified_select_returns_all_columns(): void
     {
         $columns = ['id', 'phone', 'code', 'name', 'symbol', 'currency', 'continent', 'continent_code'];
         $row = $this->queryTestCountries()->findOne();
@@ -68,13 +70,13 @@ final class PdoQueryTest extends TestCase
         }
     }
 
-    public function testSelectAs(): void
+    public function test_select_as(): void
     {
         $row = $this->queryTestCountries()->selectAs('symbol', 'currency_symbol')->findOne();
         static::assertArrayHasKey('currency_symbol', $row);
     }
 
-    public function testSelectRaw(): void
+    public function test_select_raw(): void
     {
         $row = $this->queryTestCountries()->selectRaw('COUNT()', 'RANDOM()', '"string"')->findOne();
         static::assertSame((int) $row['COUNT()'], 252);
@@ -82,7 +84,7 @@ final class PdoQueryTest extends TestCase
         static::assertArrayHasKey('RANDOM()', $row);
     }
 
-    public function testSelectRawAs(): void
+    public function test_select_raw_as(): void
     {
         $row = $this->queryTestCountries()->selectRawAs('COUNT()', 'number_of_rows')->findOne();
         static::assertArrayHasKey('number_of_rows', $row);
