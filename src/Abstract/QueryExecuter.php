@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\Abstract;
+namespace Tomrf\Conform\Abstract;
 
-use Tomrf\Snek\Row;
+use Tomrf\Conform\Row;
 
 abstract class QueryExecuter
 {

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\Interface;
+namespace Tomrf\Conform\Interface;
 
-use Tomrf\Snek\Abstract\ConnectionCredentials;
-use Tomrf\Snek\Abstract\QueryBuilder;
-use Tomrf\Snek\ActiveRecord\Model;
+use Tomrf\Conform\Abstract\ConnectionCredentials;
+use Tomrf\Conform\Abstract\QueryBuilder;
+use Tomrf\Conform\ActiveRecord\Model;
 
 /** @package Connection */
 interface ConnectionInterface

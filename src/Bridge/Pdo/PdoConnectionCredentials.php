@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\Bridge\Pdo;
+namespace Tomrf\Conform\Bridge\Pdo;
 
-use Tomrf\Snek\Abstract\ConnectionCredentials;
-use Tomrf\Snek\Interface\ConnectionCredentialsInterface;
+use Tomrf\Conform\Abstract\ConnectionCredentials;
+use Tomrf\Conform\Interface\ConnectionCredentialsInterface;
 
 class PdoConnectionCredentials extends ConnectionCredentials implements ConnectionCredentialsInterface
 {

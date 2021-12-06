@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek;
+namespace Tomrf\Conform;
 
 use RuntimeException;
-use Tomrf\Snek\Abstract\Connection;
+use Tomrf\Conform\Abstract\Connection;
 
 class ConnectionManager
 {

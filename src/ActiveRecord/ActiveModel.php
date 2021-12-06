@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\ActiveRecord;
+namespace Tomrf\Conform\ActiveRecord;
 
 use ReflectionClass;
 use RuntimeException;
-use Tomrf\Snek\Abstract\Connection;
-use Tomrf\Snek\Abstract\QueryBuilder;
-use Tomrf\Snek\Row;
+use Tomrf\Conform\Abstract\Connection;
+use Tomrf\Conform\Abstract\QueryBuilder;
+use Tomrf\Conform\Row;
 
 class ActiveModel extends Model
 {

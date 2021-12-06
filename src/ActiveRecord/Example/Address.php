@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\ActiveRecord\Example;
+namespace Tomrf\Conform\ActiveRecord\Example;
 
-class Address extends \Tomrf\Snek\ActiveRecord\Model
+class Address extends \Tomrf\Conform\ActiveRecord\Model
 {
     protected string $table = 'address';
     protected string $primaryKey = 'id';

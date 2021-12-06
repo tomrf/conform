@@ -1,11 +1,11 @@
 {
-    "name": "tomrf/snek",
+    "name": "tomrf/conform",
     "description": "ORM; query builder and active record implementation using PDO",
     "type": "library",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Tomrf\\Snek\\": "src/"
+            "Tomrf\\Conform\\": "src/"
         }
     },
     "minimum-stability": "stable",
@@ -23,7 +23,7 @@
             "php-cs-fixer fix --diff --verbose --allow-risky=yes src/ ; rm .php-cs-fixer.cache"
         ],
         "phpstan": [
-            "phpstan analyze --level 7 src"
+            "phpstan analyze --level 7 src/"
         ],
         "phpunit": [
             "phpunit"

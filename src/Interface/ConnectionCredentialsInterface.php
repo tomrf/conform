@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\Interface;
+namespace Tomrf\Conform\Interface;
 
 interface ConnectionCredentialsInterface
 {

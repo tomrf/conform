@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\Interface;
+namespace Tomrf\Conform\Interface;
 
-use Tomrf\Snek\Row;
+use Tomrf\Conform\Row;
 
 interface QueryBuilderInterface
 {

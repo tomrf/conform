@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\ActiveRecord\Example;
+namespace Tomrf\Conform\ActiveRecord\Example;
 
-use Tomrf\Snek\Abstract\QueryBuilder;
-use Tomrf\Snek\ActiveRecord\ActiveModel;
+use Tomrf\Conform\Abstract\QueryBuilder;
+use Tomrf\Conform\ActiveRecord\ActiveModel;
 
 class User extends ActiveModel
 {

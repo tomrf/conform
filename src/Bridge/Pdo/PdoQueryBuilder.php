@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\Bridge\Pdo;
+namespace Tomrf\Conform\Bridge\Pdo;
 
 use Exception;
-use Tomrf\Snek\Abstract\QueryBuilder;
-use Tomrf\Snek\Interface\QueryBuilderInterface;
-use Tomrf\Snek\Row;
+use Tomrf\Conform\Abstract\QueryBuilder;
+use Tomrf\Conform\Interface\QueryBuilderInterface;
+use Tomrf\Conform\Row;
 
 class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
 {

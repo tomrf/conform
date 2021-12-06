@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\Bridge\Pdo;
+namespace Tomrf\Conform\Bridge\Pdo;
 
 use PDO;
 use PDOException;
 use PDOStatement;
 use RuntimeException;
-use Tomrf\Snek\Abstract\Connection;
-use Tomrf\Snek\Abstract\ConnectionCredentials;
-use Tomrf\Snek\Abstract\QueryBuilder;
-use Tomrf\Snek\ActiveRecord\Model;
-use Tomrf\Snek\Factory;
-use Tomrf\Snek\Interface\ConnectionInterface;
+use Tomrf\Conform\Abstract\Connection;
+use Tomrf\Conform\Abstract\ConnectionCredentials;
+use Tomrf\Conform\Abstract\QueryBuilder;
+use Tomrf\Conform\ActiveRecord\Model;
+use Tomrf\Conform\Factory;
+use Tomrf\Conform\Interface\ConnectionInterface;
 
 class PdoConnection extends Connection implements ConnectionInterface
 {

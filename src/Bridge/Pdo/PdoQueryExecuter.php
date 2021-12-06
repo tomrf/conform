@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\Bridge\Pdo;
+namespace Tomrf\Conform\Bridge\Pdo;
 
 use Exception;
 use PDO;
 use PDOStatement;
-use Tomrf\Snek\Abstract\QueryExecuter;
-use Tomrf\Snek\Row;
+use Tomrf\Conform\Abstract\QueryExecuter;
+use Tomrf\Conform\Row;
 
 class PdoQueryExecuter extends QueryExecuter
 {

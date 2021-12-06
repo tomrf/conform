@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\Abstract;
+namespace Tomrf\Conform\Abstract;
 
-use Tomrf\Snek\Interface\ConnectionCredentialsInterface;
+use Tomrf\Conform\Interface\ConnectionCredentialsInterface;
 
 abstract class ConnectionCredentials implements ConnectionCredentialsInterface
 {

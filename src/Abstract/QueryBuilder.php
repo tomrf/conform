@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\Abstract;
+namespace Tomrf\Conform\Abstract;
 
-use Tomrf\Snek\Interface\QueryBuilderInterface;
-use Tomrf\Snek\Row;
+use Tomrf\Conform\Interface\QueryBuilderInterface;
+use Tomrf\Conform\Row;
 
 abstract class QueryBuilder implements QueryBuilderInterface
 {

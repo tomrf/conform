@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek;
+namespace Tomrf\Conform;
 
 use ArrayObject;
 use Exception;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\ActiveRecord\Example;
+namespace Tomrf\Conform\ActiveRecord\Example;
 
-class Post extends \Tomrf\Snek\ActiveRecord\Model
+class Post extends \Tomrf\Conform\ActiveRecord\Model
 {
     protected string $table = 'post';
     protected string $primaryKey = 'id';

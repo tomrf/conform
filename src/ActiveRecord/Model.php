@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\ActiveRecord;
+namespace Tomrf\Conform\ActiveRecord;
 
 use Exception;
-use Tomrf\Snek\Row;
+use Tomrf\Conform\Row;
 
 abstract class Model
 {
