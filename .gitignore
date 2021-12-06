@@ -2,3 +2,4 @@ vendor/
 .phpunit.cache/
 .phpdoc/
 test.php
+todo.txt
