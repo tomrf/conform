@@ -8,11 +8,11 @@ use PDO;
 use PDOException;
 use PDOStatement;
 use RuntimeException;
-use Tomrf\Snek\ActiveRecord\Model;
 use Tomrf\Snek\Abstract\Connection;
 use Tomrf\Snek\Abstract\ConnectionCredentials;
-use Tomrf\Snek\Factory;
 use Tomrf\Snek\Abstract\QueryBuilder;
+use Tomrf\Snek\ActiveRecord\Model;
+use Tomrf\Snek\Factory;
 
 class PdoConnection extends Connection
 {
