@@ -42,14 +42,6 @@ class ActiveModel extends Model
         return $array;
     }
 
-    // public function __invoke(string $modelClass): QueryBuilder
-    // {
-    //     /** @var ActiveModel */
-    //     $model = new $modelClass([], $this->connection);
-
-    //     $connection = $modelClass::
-    // }
-
     public static function new(?Connection $connection = null): self
     {
         return self::returnInstanceOfSelf([], $connection);

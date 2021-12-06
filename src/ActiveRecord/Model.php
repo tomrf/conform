@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use Tomrf\Snek\Row;
-
 namespace Tomrf\Snek\ActiveRecord;
 
 use Exception;
