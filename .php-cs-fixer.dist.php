@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 $finder = PhpCsFixer\Finder::create()
-    ->exclude('vendor/')
+    ->exclude('vendor')
+    ->exclude('tests')
     ->in(__DIR__)
 ;
 
@@ -18,6 +19,7 @@ return $config->setRules([
     '@PHP80Migration:risky' => true,
     'mb_str_functions' => true,
     'phpdoc_no_package' => false,
+    'php_unit_method_casing' => ['case' => 'snake_case'],
 ])
     ->setFinder($finder)
 ;
