@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
+use Tomrf\Snek\Bridge\Pdo\PdoConnection;
+use Tomrf\Snek\Bridge\Pdo\PdoConnectionCredentials;
+use Tomrf\Snek\Bridge\Pdo\PdoQueryBuilder;
+use Tomrf\Snek\Bridge\Pdo\PdoQueryExecuter;
 use Tomrf\Snek\Factory;
-use Tomrf\Snek\Pdo\PdoConnection;
-use Tomrf\Snek\Pdo\PdoConnectionCredentials;
-use Tomrf\Snek\Pdo\PdoQueryBuilder;
-use Tomrf\Snek\Pdo\PdoQueryExecuter;
 use Tomrf\Snek\Row;
 
 /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Snek\Pdo;
+namespace Tomrf\Snek\Bridge\Pdo;
 
 use PDO;
 use PDOException;
