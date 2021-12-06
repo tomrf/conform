@@ -6,9 +6,10 @@ namespace Tomrf\Snek\Bridge\Pdo;
 
 use Exception;
 use Tomrf\Snek\Abstract\QueryBuilder;
+use Tomrf\Snek\Interface\QueryBuilderInterface;
 use Tomrf\Snek\Row;
 
-class PdoQueryBuilder extends QueryBuilder
+class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
 {
     protected string $table = '';
 

@@ -13,8 +13,9 @@ use Tomrf\Snek\Abstract\ConnectionCredentials;
 use Tomrf\Snek\Abstract\QueryBuilder;
 use Tomrf\Snek\ActiveRecord\Model;
 use Tomrf\Snek\Factory;
+use Tomrf\Snek\Interface\ConnectionInterface;
 
-class PdoConnection extends Connection
+class PdoConnection extends Connection implements ConnectionInterface
 {
     protected PDO $pdo;
     protected bool $isConnected = false;
@@ -30,8 +31,8 @@ class PdoConnection extends Connection
         protected Factory $queryBuilderFactory,
         protected Factory $queryExecuterFactory,
         protected ?array $options = [
-            \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_OBJ,
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         ]
     ) {
         $this->connect();
