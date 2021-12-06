@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tomrf\Snek\Abstract;
 
 use Tomrf\Snek\ActiveRecord\Model;
-use Tomrf\Snek\Interface\Connection as ConnectionInterface;
+use Tomrf\Snek\Interface\ConnectionInterface;
 
 /** @package Connection */
 abstract class Connection implements ConnectionInterface

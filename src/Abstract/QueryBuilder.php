@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Tomrf\Snek\Abstract;
 
+use Tomrf\Snek\Interface\QueryBuilderInterface;
 use Tomrf\Snek\Row;
 
-abstract class QueryBuilder
+abstract class QueryBuilder implements QueryBuilderInterface
 {
     abstract public function forTable(string $table): self;
 
@@ -53,27 +54,4 @@ abstract class QueryBuilder
      * @return null|array<int,mixed>
      */
     abstract public function findMany(): ?array;
-
-    /**
-     * @return array<string,mixed>
-     */
-    abstract protected function getQueryParameters(): array;
-
-    abstract protected function buildQuerySelectExpression(): string;
-
-    abstract protected function buildQueryJoinClause(): string;
-
-    abstract protected function buildQueryWhereCondition(): string;
-
-    abstract protected function buildQueryOrderByClause(): string;
-
-    abstract protected function buildQuery(): string;
-
-    abstract protected function assertQueryState(): void;
-
-    abstract protected function quoteString(string $string): string;
-
-    abstract protected function quoteExpression(string $expression): string;
-
-    abstract protected function isExpressionQuoted(string $expression): bool;
 }

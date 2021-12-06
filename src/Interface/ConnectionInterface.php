@@ -9,7 +9,7 @@ use Tomrf\Snek\Abstract\QueryBuilder;
 use Tomrf\Snek\ActiveRecord\Model;
 
 /** @package Connection */
-interface Connection
+interface ConnectionInterface
 {
     public function getQueryBuilder(): QueryBuilder;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tomrf\Snek\Interface;
 
-interface ConnectionCredentials
+interface ConnectionCredentialsInterface
 {
     public function getDsn(): string;
 
