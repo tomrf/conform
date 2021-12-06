@@ -158,7 +158,7 @@ class ActiveModel extends Model
      *
      * @param array<string,mixed>|Row $data *
      *
-     * @return Model
+     * @return ActiveModel
      */
     protected static function returnInstanceOfSelf(Row|array $data = [], ?Connection $connection = null): self
     {

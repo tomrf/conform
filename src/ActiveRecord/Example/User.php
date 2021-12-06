@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tomrf\Snek\ActiveRecord\Example;
 
-use Tomrf\Snek\Abstract\Connection;
 use Tomrf\Snek\Abstract\QueryBuilder;
 use Tomrf\Snek\ActiveRecord\ActiveModel;
 
@@ -38,15 +37,10 @@ class User extends ActiveModel
         return $this->hasMany(Post::class);
     }
 
-    public function customer(): QueryBuilder
-    {
-        return $this->belongsTo(Customer::class);
-    }
-
-    public static function new(?Connection $connection = null): self
-    {
-        return parent::new($connection);
-    }
+    // public function customer(): QueryBuilder
+    // {
+    //     return $this->belongsTo(Customer::class);
+    // }
 
     protected function onBeforePersist(): bool
     {

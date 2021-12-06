@@ -9,12 +9,17 @@ use Tomrf\Snek\Row;
 
 abstract class QueryExecuter
 {
+    /**
+     * @param array<string,mixed> $queryParameters
+     *
+     * @return bool|Row
+     */
     abstract public function findOne(string $query, array $queryParameters): Row|bool;
 
     /**
      * @param array<string,mixed> $queryParameters
      *
-     * @throws Exception
+     * @throws \Exception
      *
      * @return array<int,mixed>
      */
@@ -23,7 +28,7 @@ abstract class QueryExecuter
     /**
      * @param array<string,mixed> $queryParameters
      *
-     * @throws Exception
+     * @throws \Exception
      */
     abstract protected function executeQuery(string $query, array $queryParameters): PDOStatement;
 
