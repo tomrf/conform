@@ -1,17 +1,16 @@
 {
     "name": "tomrf/snek",
-    "description": "PDO ORM",
+    "description": "ORM; query builder and active record implementation using PDO",
     "type": "library",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Tomrf\\Snek\\": "src/",
-            "Model\\": "model/"
+            "Tomrf\\Snek\\": "src/"
         }
     },
     "minimum-stability": "stable",
     "require": {
-        "haydenpierce/class-finder": "^0.4.3"
+        "php": "8.*|7.*"
     },
     "require-dev": {
         "phpstan/phpstan": "^0.12",
