@@ -144,28 +144,20 @@ abstract class Model
             ));
         }
 
-        if ($this->isPrimaryKey($column)) {
+        return $this->setAny($column, $value);
+    }
+
+    public function setProtected(string $column, mixed $value): mixed
+    {
+        if (!$this->isProtected($column)) {
             throw new Exception(sprintf(
-                'Access violation setting primary key column "%s" for table "%s"',
+                'Protected column "%s" for table "%s" is not protected or does not exist',
                 $column,
                 $this->table
             ));
         }
 
-        $valueType = \gettype($value);
-        $columnType = $this->columns[$column]['type'] ?? null;
-
-        if (null !== $columnType && $valueType !== $columnType) {
-            throw new Exception(sprintf(
-                'Illegal type "%s" (expected "%s") for column "%s" in table "%s"',
-                $valueType,
-                $columnType,
-                $column,
-                $this->table
-            ));
-        }
-
-        return $this->dirty[$column] = $value;
+        return $this->setAny($column, $value);
     }
 
     public function isDirty(string $column = null): bool
@@ -222,6 +214,32 @@ abstract class Model
     public function toJson(bool $includeProtectedColumns = false): string
     {
         return json_encode($this->toArray($includeProtectedColumns), JSON_THROW_ON_ERROR);
+    }
+
+    protected function setAny(string $column, mixed $value): mixed
+    {
+        if ($this->isPrimaryKey($column)) {
+            throw new Exception(sprintf(
+                'Access violation setting primary key column "%s" for table "%s"',
+                $column,
+                $this->table
+            ));
+        }
+
+        $valueType = \gettype($value);
+        $columnType = $this->columns[$column]['type'] ?? null;
+
+        if (null !== $columnType && $valueType !== $columnType) {
+            throw new Exception(sprintf(
+                'Illegal type "%s" (expected "%s") for column "%s" in table "%s"',
+                $valueType,
+                $columnType,
+                $column,
+                $this->table
+            ));
+        }
+
+        return $this->dirty[$column] = $value;
     }
 
     protected function setDefaults(): void
