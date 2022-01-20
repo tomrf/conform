@@ -216,6 +216,13 @@ abstract class Model
         return json_encode($this->toArray($includeProtectedColumns), JSON_THROW_ON_ERROR);
     }
 
+    public function getColumnDefinition(string $column): ?object
+    {
+        $definition = $this->columns[$column] ?? null;
+
+        return null === $definition ? null : (object) $definition;
+    }
+
     protected function setAny(string $column, mixed $value): mixed
     {
         if ($this->isPrimaryKey($column)) {
@@ -287,7 +294,7 @@ abstract class Model
             return null;
         }
 
-        $columnDefinitions = $this->getColumnDefinitions($column);
+        $columnDefinitions = $this->getColumnDefinition($column);
         if (null !== $columnDefinitions) {
             $type = $columnDefinitions->type;
             if (null !== $type) {
@@ -300,16 +307,6 @@ abstract class Model
         }
 
         return $value;
-    }
-
-    /**
-     * @ignore
-     */
-    protected function getColumnDefinitions(string $column): ?object
-    {
-        $definition = $this->columns[$column] ?? null;
-
-        return null === $definition ? null : (object) $definition;
     }
 
     /**
