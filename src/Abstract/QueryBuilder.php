@@ -11,6 +11,8 @@ abstract class QueryBuilder implements QueryBuilderInterface
 {
     abstract public function forTable(string $table): self;
 
+    abstract public function insert(array $keyValue): string;
+
     abstract public function select(string ...$params): self;
 
     abstract public function selectAs(string $expression, string $alias): self;

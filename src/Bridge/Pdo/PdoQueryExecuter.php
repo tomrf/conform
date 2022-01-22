@@ -22,6 +22,18 @@ class PdoQueryExecuter extends QueryExecuter
      *
      * @throws Exception
      */
+    public function insert(string $query, array $queryParameters): string|false
+    {
+        $this->executeQuery($query, $queryParameters);
+
+        return $this->connection->getPdo()->lastInsertId();
+    }
+
+    /**
+     * @param array<string,mixed> $queryParameters
+     *
+     * @throws Exception
+     */
     public function findOne(string $query, array $queryParameters): Row|bool
     {
         $statement = $this->executeQuery($query, $queryParameters);

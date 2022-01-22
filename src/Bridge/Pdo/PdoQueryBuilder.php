@@ -29,6 +29,10 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
      * @var array<array>
      */
     protected array $queryOrderBy = [];
+    /**
+     * @var array<array>
+     */
+    protected array $queryInsert = [];
 
     protected int $queryLimit = -1;
     protected int $queryLimitOffset = -1;
@@ -48,6 +52,23 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
         $this->table = $table;
 
         return $this;
+    }
+
+    public function insert(array $keyValue): string
+    {
+        foreach ($keyValue as $key => $value) {
+            $this->queryInsert[] = [
+                'column' => trim($key),
+                'value' => $value,
+            ];
+        }
+
+        $this->assertQueryState();
+
+        return $this->queryExecuter->insert(
+            $this->buildQuery(),
+            $this->queryParameters
+        );
     }
 
     public function select(string ...$params): self
@@ -279,6 +300,28 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
         return $joinClause;
     }
 
+    protected function buildQueryInsertStatement(): string
+    {
+        $columns = '';
+        $values = '';
+
+        if (0 === \count($this->queryInsert)) {
+            return '';
+        }
+
+        foreach ($this->queryInsert as $columnValue) {
+            $columns .= $this->quoteExpression($columnValue['column']).', ';
+            $values .= ':'.$columnValue['column'].', ';
+            $this->queryParameters[$columnValue['column']] = $columnValue['value'];
+        }
+
+        return sprintf(
+            '(%s) VALUES (%s)',
+            trim($columns, ', '),
+            trim($values, ', ')
+        );
+    }
+
     protected function buildQueryWhereCondition(): string
     {
         if (0 === \count($this->queryWhere)) {
@@ -351,6 +394,14 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
 
     protected function buildQuery(): string
     {
+        if (\count($this->queryInsert) > 0) {
+            return sprintf(
+                'INSERT INTO %s %s',
+                $this->quoteExpression($this->table),
+                $this->buildQueryInsertStatement()
+            );
+        }
+
         return sprintf(
             'SELECT %s FROM %s%s%s%s%s%s',
             $this->buildQuerySelectExpression(),
