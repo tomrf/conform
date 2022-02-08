@@ -33,14 +33,15 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
      * @var array<array>
      */
     protected array $queryInsert = [];
-
-    protected int $queryLimit = -1;
-    protected int $queryLimitOffset = -1;
-
     /**
      * @var array<string,mixed>
      */
     protected array $queryParameters = [];
+
+    protected int $queryLimit = -1;
+    protected int $queryLimitOffset = -1;
+
+    protected ?string $onDuplicate = null;
 
     public function __construct(
         protected PdoQueryExecuter $queryExecuter,
@@ -54,7 +55,7 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
         return $this;
     }
 
-    public function insert(array $keyValue): string
+    public function insert(array $keyValue, ?string $onDuplicate = null): string
     {
         foreach ($keyValue as $key => $value) {
             $this->queryInsert[] = [
@@ -62,6 +63,8 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
                 'value' => $value,
             ];
         }
+
+        $this->onDuplicate = $onDuplicate;
 
         $this->assertQueryState();
 
@@ -395,11 +398,12 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
     protected function buildQuery(): string
     {
         if (\count($this->queryInsert) > 0) {
-            return sprintf(
-                'INSERT INTO %s %s',
+            return trim(sprintf(
+                'INSERT INTO %s %s %s',
                 $this->quoteExpression($this->table),
-                $this->buildQueryInsertStatement()
-            );
+                $this->buildQueryInsertStatement(),
+                $this->onDuplicate ? 'ON DUPLICATE KEY '.$this->onDuplicate : ''
+            ));
         }
 
         return sprintf(
