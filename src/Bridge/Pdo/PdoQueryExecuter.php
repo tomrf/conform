@@ -19,8 +19,6 @@ class PdoQueryExecuter extends QueryExecuter
 
     /**
      * @param array<string,mixed> $queryParameters
-     *
-     * @throws Exception
      */
     public function insert(string $query, array $queryParameters): string|false
     {
@@ -67,19 +65,11 @@ class PdoQueryExecuter extends QueryExecuter
      */
     protected function executeQuery(string $query, array $queryParameters): PDOStatement
     {
-        try {
-            $statement = $this->connection->getPdo()->prepare(
-                $query
-            );
-        } catch (\Exception $e) {
-            throw new \Exception('Error preparing statement: '.$e->getMessage());
-        }
+        $statement = $this->connection->getPdo()->prepare(
+            $query
+        );
 
-        try {
-            $statement->execute($queryParameters);
-        } catch (\Exception $e) {
-            throw new \Exception('Error executing query: '.$e->getMessage());
-        }
+        $statement->execute($queryParameters);
 
         return $statement;
     }
