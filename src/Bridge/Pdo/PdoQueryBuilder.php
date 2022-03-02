@@ -79,13 +79,18 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
         return $this;
     }
 
-    public function insert(array $keyValue, ?string $onDuplicate = null): string
+    public function onDuplicateKey(string $expression): self
+    {
+        $this->onDuplicate = trim($expression);
+
+        return $this;
+    }
+
+    public function insert(array $keyValue): string
     {
         foreach ($keyValue as $key => $value) {
             $this->set($key, $value);
         }
-
-        $this->onDuplicate = $onDuplicate;
 
         $this->assertQueryState();
 
