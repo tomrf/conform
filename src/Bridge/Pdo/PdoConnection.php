@@ -47,7 +47,7 @@ class PdoConnection extends Connection implements ConnectionInterface
         );
     }
 
-    public function queryTable(string $tableName): QueryBuilder
+    public function queryTable(string $tableName): PdoQueryBuilder
     {
         $queryBuilder = $this->getQueryBuilder();
 
@@ -135,8 +135,10 @@ class PdoConnection extends Connection implements ConnectionInterface
                 $this->credentials->getPassword(),
                 $this->options
             );
-        } catch (\PDOException $e) {
-            throw new RuntimeException('Unable to connecto to database: '.$e->getMessage());
+        } catch (\PDOException $exception) {
+            throw new RuntimeException(
+                sprintf('Unable to connect to database: %s', $exception)
+            );
         }
 
         $this->isConnected = true;
