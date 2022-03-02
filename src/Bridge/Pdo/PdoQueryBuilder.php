@@ -55,13 +55,34 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
         return $this;
     }
 
+    public function set(string $column, mixed $value): self
+    {
+        $key = trim($column);
+
+        $this->queryInsert[$key] = [
+            'value' => $value,
+            'raw' => false,
+        ];
+
+        return $this;
+    }
+
+    public function setRaw(string $column, string $expression): self
+    {
+        $key = trim($column);
+
+        $this->queryInsert[$key] = [
+            'value' => $expression,
+            'raw' => true,
+        ];
+
+        return $this;
+    }
+
     public function insert(array $keyValue, ?string $onDuplicate = null): string
     {
         foreach ($keyValue as $key => $value) {
-            $this->queryInsert[] = [
-                'column' => trim($key),
-                'value' => $value,
-            ];
+            $this->set($key, $value);
         }
 
         $this->onDuplicate = $onDuplicate;
@@ -312,10 +333,18 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
             return '';
         }
 
-        foreach ($this->queryInsert as $columnValue) {
-            $columns .= $this->quoteExpression($columnValue['column']).', ';
-            $values .= ':'.$columnValue['column'].', ';
-            $this->queryParameters[$columnValue['column']] = $columnValue['value'];
+        foreach ($this->queryInsert as $column => $valueData) {
+            $isRaw = $valueData['raw'];
+            $value = $valueData['value'];
+
+            $columns .= sprintf('%s, ', $this->quoteExpression($column));
+
+            if (true === $isRaw) {
+                $values .= sprintf('%s, ', $value);
+            } else {
+                $values .= sprintf(':%s, ', $column);
+                $this->queryParameters[$column] = $value;
+            }
         }
 
         return sprintf(
