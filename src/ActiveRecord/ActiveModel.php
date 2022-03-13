@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tomrf\Conform\ActiveRecord;
 
 use ReflectionClass;
+use ReflectionException;
 use RuntimeException;
 use Tomrf\Conform\Abstract\Connection;
 use Tomrf\Conform\Abstract\QueryBuilder;
@@ -82,7 +83,7 @@ class ActiveModel extends Model
             ->findOne()
         ;
 
-        if (false === $row) {
+        if (\is_bool($row)) {
             throw new RuntimeException(sprintf(
                 'Could not create instance of model "%s" from database connection: no match for column "%s" with value "%s"',
                 self::getTableName(),
@@ -114,6 +115,11 @@ class ActiveModel extends Model
         return $this->onAfterPersist();
     }
 
+    /**
+     * @param class-string $modelClass
+     *
+     * @throws ReflectionException
+     */
     protected function belongsTo(string $modelClass, string $ownColumn = null): QueryBuilder
     {
         $reflection = new ReflectionClass($modelClass);
@@ -131,6 +137,11 @@ class ActiveModel extends Model
         ;
     }
 
+    /**
+     * @param class-string $modelClass
+     *
+     * @throws ReflectionException
+     */
     protected function hasOne(string $modelClass, string $foreignColumn = null): QueryBuilder
     {
         $reflection = new ReflectionClass($modelClass);
@@ -148,6 +159,11 @@ class ActiveModel extends Model
         ;
     }
 
+    /**
+     * @param class-string $modelClass
+     *
+     * @throws ReflectionException
+     */
     protected function hasMany(string $modelClass): QueryBuilder
     {
         return $this->hasOne($modelClass);

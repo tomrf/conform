@@ -218,11 +218,16 @@ abstract class Model
         return json_encode($this->toArray($includeProtectedColumns), JSON_THROW_ON_ERROR);
     }
 
-    public function getColumnDefinition(string $column): ?object
+    /**
+     * @return null|array<string, mixed>
+     */
+    public function getColumnDefinition(string $column): ?array
     {
-        $definition = $this->columns[$column] ?? null;
+        if (!isset($this->columns[$column])) {
+            return null;
+        }
 
-        return null === $definition ? null : (object) $definition;
+        return $this->columns[$column];
     }
 
     protected function setAny(string $column, mixed $value): mixed
@@ -298,7 +303,7 @@ abstract class Model
 
         $columnDefinitions = $this->getColumnDefinition($column);
         if (null !== $columnDefinitions) {
-            $type = $columnDefinitions->type;
+            $type = $columnDefinitions['type'] ?? null;
             if (null !== $type) {
                 if (\in_array($type, ['int', 'integer'], true)) {
                     $value = (int) $value;

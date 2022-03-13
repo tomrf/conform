@@ -22,5 +22,8 @@ abstract class QueryExecuter
      */
     abstract public function findMany(string $query, array $queryParameters): array;
 
+    /**
+     * @param array<string, mixed> $queryParameters
+     */
     abstract public function insert(string $query, array $queryParameters): string|false;
 }

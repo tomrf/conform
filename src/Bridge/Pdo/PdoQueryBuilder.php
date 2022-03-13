@@ -94,7 +94,7 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
      *
      * @throws Exception
      */
-    public function insert(array $keyValue): string
+    public function insert(array $keyValue): string|false
     {
         foreach ($keyValue as $key => $value) {
             $this->set($key, $value);
@@ -350,6 +350,8 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
             $isRaw = $valueData['raw'];
             $value = $valueData['value'];
 
+            $column = (string) $column;
+
             $columns .= sprintf('%s, ', $this->quoteExpression($column));
 
             if (true === $isRaw) {
@@ -403,6 +405,10 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
                 }
 
                 $parameterName = str_replace('.', '_', $where['left']);
+                if (\is_array($parameterName)) {
+                    throw new RuntimeException('Unexpected value: got array from str_replace()');
+                }
+
                 $this->queryParameters[$parameterName] = $where['right'];
 
                 $whereCondition .= sprintf(
