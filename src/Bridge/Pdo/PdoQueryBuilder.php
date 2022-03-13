@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Tomrf\Conform\Bridge\Pdo;
 
+use DomainException;
 use Exception;
+use InvalidArgumentException;
+use RuntimeException;
 use Tomrf\Conform\Abstract\QueryBuilder;
 use Tomrf\Conform\Interface\QueryBuilderInterface;
 use Tomrf\Conform\Row;
@@ -86,6 +89,11 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
         return $this;
     }
 
+    /**
+     * @param array<string, mixed> $keyValue
+     *
+     * @throws Exception
+     */
     public function insert(array $keyValue): string
     {
         foreach ($keyValue as $key => $value) {
@@ -232,7 +240,7 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
     public function limit(int $limit, ?int $offset = null): self
     {
         if ($limit < 0) {
-            throw new \Exception('Illegal (negative) LIMIT value specified');
+            throw new InvalidArgumentException('Illegal (negative) LIMIT value specified');
         }
 
         $this->queryLimit = $limit;
@@ -247,7 +255,7 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
     public function offset(int $offset, ?int $limit = null): self
     {
         if ($offset < 0) {
-            throw new \Exception('Illegal (negative) OFFSET value specified');
+            throw new InvalidArgumentException('Illegal (negative) OFFSET value specified');
         }
         $this->queryLimitOffset = $offset;
 
@@ -387,7 +395,7 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
                 );
             } else {
                 if (isset($this->queryParameters[$where['left']])) {
-                    throw new Exception(sprintf(
+                    throw new RuntimeException(sprintf(
                         'Duplicate parameter "%s" in WHERE condition for table "%s"',
                         $where['left'],
                         $this->table
@@ -455,7 +463,7 @@ class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
     protected function assertQueryState(): void
     {
         if (-1 !== $this->queryLimitOffset && -1 === $this->queryLimit) {
-            throw new \Exception('Query validation failed: OFFSET specified without LIMIT clause');
+            throw new DomainException('Query validation failed: OFFSET specified without LIMIT clause');
         }
     }
 

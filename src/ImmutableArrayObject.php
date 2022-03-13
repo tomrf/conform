@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tomrf\Conform;
 
 use ArrayObject;
-use Exception;
+use OutOfBoundsException;
 
 /**
  * @ignore
@@ -57,7 +57,7 @@ class ImmutableArrayObject extends ArrayObject
         string $accessDescription = 'reading or modifying',
         string $objectType = 'ImmutableArrayObject'
     ): void {
-        throw new Exception(sprintf(
+        throw new OutOfBoundsException(sprintf(
             'Access violation %s %s',
             $accessDescription,
             $objectType

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tomrf\Conform\ActiveRecord;
 
+use DomainException;
 use Exception;
+use OutOfBoundsException;
 use Tomrf\Conform\Row;
 
 abstract class Model
@@ -55,7 +57,7 @@ abstract class Model
      */
     public function __get(mixed $name): mixed
     {
-        throw new Exception('Access violation directly getting arbitrary property from Model: '.$name);
+        throw new OutOfBoundsException('Access violation directly getting arbitrary property from Model: '.$name);
     }
 
     /**
@@ -63,7 +65,7 @@ abstract class Model
      */
     public function __set(mixed $name, mixed $value): void
     {
-        throw new Exception('Access violation directly setting arbitrary property on Model: '.$name);
+        throw new OutOfBoundsException('Access violation directly setting arbitrary property on Model: '.$name);
     }
 
     public static function new(): self
@@ -93,7 +95,7 @@ abstract class Model
     public function get(string $column): mixed
     {
         if ($this->isProtected($column)) {
-            throw new Exception(sprintf(
+            throw new DomainException(sprintf(
                 'Access violation getting protected column "%s" for table "%s"',
                 $column,
                 $this->table
@@ -114,7 +116,7 @@ abstract class Model
     public function getProtected(string $protectedColumn): mixed
     {
         if (!$this->isProtected($protectedColumn)) {
-            throw new Exception(sprintf(
+            throw new DomainException(sprintf(
                 'Protected column "%s" for table "%s" is not protected or does not exist',
                 $protectedColumn,
                 $this->table
@@ -137,7 +139,7 @@ abstract class Model
     public function set(string $column, mixed $value): mixed
     {
         if ($this->isProtected($column)) {
-            throw new Exception(sprintf(
+            throw new DomainException(sprintf(
                 'Access violation setting protected column "%s" for table "%s"',
                 $column,
                 $this->table
@@ -150,7 +152,7 @@ abstract class Model
     public function setProtected(string $column, mixed $value): mixed
     {
         if (!$this->isProtected($column)) {
-            throw new Exception(sprintf(
+            throw new OutOfBoundsException(sprintf(
                 'Protected column "%s" for table "%s" is not protected or does not exist',
                 $column,
                 $this->table
@@ -226,7 +228,7 @@ abstract class Model
     protected function setAny(string $column, mixed $value): mixed
     {
         if ($this->isPrimaryKey($column)) {
-            throw new Exception(sprintf(
+            throw new DomainException(sprintf(
                 'Access violation setting primary key column "%s" for table "%s"',
                 $column,
                 $this->table
@@ -237,7 +239,7 @@ abstract class Model
         $columnType = $this->columns[$column]['type'] ?? null;
 
         if (null !== $columnType && $valueType !== $columnType) {
-            throw new Exception(sprintf(
+            throw new DomainException(sprintf(
                 'Illegal type "%s" (expected "%s") for column "%s" in table "%s"',
                 $valueType,
                 $columnType,

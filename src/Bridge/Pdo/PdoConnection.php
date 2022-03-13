@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tomrf\Conform\Bridge\Pdo;
 
+use DomainException;
 use PDO;
 use PDOException;
 use PDOStatement;
@@ -49,6 +50,7 @@ class PdoConnection extends Connection implements ConnectionInterface
 
     public function queryTable(string $tableName): PdoQueryBuilder
     {
+        /** @var PdoQueryBuilder */
         $queryBuilder = $this->getQueryBuilder();
 
         return $queryBuilder->forTable($tableName);
@@ -67,7 +69,7 @@ class PdoConnection extends Connection implements ConnectionInterface
     public function persist(Model $model): Model
     {
         if (null === $model->getPrimaryKey()) {
-            throw new RuntimeException('Cannot persist model: primary key in data is NULL');
+            throw new DomainException('Cannot persist model: primary key in data is NULL');
         }
 
         if (!$model->isDirty()) {
