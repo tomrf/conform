@@ -13,18 +13,52 @@ use Exception;
  */
 class ImmutableArrayObject extends ArrayObject
 {
+    public function __get(string $name): mixed
+    {
+        if (!isset($this[$name])) {
+            $this->accessViolation('reading non-existing key from');
+        }
+
+        return $this[$name];
+    }
+
+    public function __isset(mixed $name)
+    {
+        return $this->offsetExists($name);
+    }
+
     public function offsetSet(mixed $key, mixed $value): void
     {
-        $this->accessViolation();
+        $this->accessViolation('modifying');
     }
 
     public function offsetUnset(mixed $key): void
     {
-        $this->accessViolation();
+        $this->accessViolation('modifying');
     }
 
-    protected function accessViolation(): void
+    public function offsetGet(mixed $key): mixed
     {
-        throw new Exception('Access violation modifying immutable Row');
+        if ($this->offsetExists($key)) {
+            return parent::offsetGet($key);
+        }
+
+        $this->accessViolation('getting non-existing key from');
+    }
+
+    public function offsetExists(mixed $key): bool
+    {
+        return parent::offsetExists($key);
+    }
+
+    protected function accessViolation(
+        string $accessDescription = 'reading or modifying',
+        string $objectType = 'ImmutableArrayObject'
+    ): void {
+        throw new Exception(sprintf(
+            'Access violation %s %s',
+            $accessDescription,
+            $objectType
+        ));
     }
 }
