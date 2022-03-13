@@ -44,6 +44,8 @@ class ImmutableArrayObject extends ArrayObject
         }
 
         $this->accessViolation('getting non-existing key from');
+
+        return null;
     }
 
     public function offsetExists(mixed $key): bool
