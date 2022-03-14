@@ -23,10 +23,11 @@
             "php-cs-fixer fix --diff --verbose --allow-risky=yes src/ ; rm .php-cs-fixer.cache"
         ],
         "phpstan": [
-            "phpstan analyze --level 7 src/"
+            "phpstan analyze --level max src/"
         ],
         "phpunit": [
             "phpunit"
         ]
     }
 }
+

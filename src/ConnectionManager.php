@@ -25,7 +25,7 @@ class ConnectionManager
         $this->connections[$name] = $connection;
     }
 
-    public function getConnection(string $name = 'default'): PdoConnection
+    public function getConnection(string $name = 'default'): ?PdoConnection
     {
         return $this->connections[$name] ?? null;
     }

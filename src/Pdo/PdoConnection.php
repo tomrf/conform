@@ -66,6 +66,9 @@ class PdoConnection
         return $this->credentials;
     }
 
+    /**
+     * @return null|array<int, int>
+     */
     public function getOptions(): ?array
     {
         return $this->options;
