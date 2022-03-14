@@ -37,6 +37,9 @@ class PdoConnectionCredentials
         return $this->password;
     }
 
+    /**
+     * Static helper function to build DSN string for PDO.
+     */
     public static function DSN(
         string $driver,
         string $dbname,

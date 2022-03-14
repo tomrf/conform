@@ -29,7 +29,10 @@ class PdoConnection
         $this->connect();
     }
 
-    public function getQueryBuilder(): PdoQueryBuilder
+    /**
+     * Create and return a query builder.
+     */
+    public function makeQueryBuilder(): PdoQueryBuilder
     {
         return $this->queryBuilderFactory->make(
             $this->queryExecuterFactory->make(
@@ -38,10 +41,13 @@ class PdoConnection
         );
     }
 
+    /**
+     * Create a query builder to query a table.
+     */
     public function queryTable(string $tableName): PdoQueryBuilder
     {
         /** @var PdoQueryBuilder */
-        $queryBuilder = $this->getQueryBuilder();
+        $queryBuilder = $this->makeQueryBuilder();
 
         return $queryBuilder->forTable($tableName);
     }
@@ -51,22 +57,33 @@ class PdoConnection
         return $this->pdo->exec($statement);
     }
 
+    /**
+     * Execute statement.
+     */
     public function query(string $statement): PDOStatement|false
     {
         return $this->pdo->query($statement);
     }
 
+    /**
+     * Get the PDO resource object for this connection.
+     */
     public function getPdo(): PDO
     {
         return $this->pdo;
     }
 
+    /**
+     * Get the PdoConnectionCredentials for this connection.
+     */
     public function getCredentials(): PdoConnectionCredentials
     {
         return $this->credentials;
     }
 
     /**
+     * Get PDO options array.
+     *
      * @return null|array<int, int>
      */
     public function getOptions(): ?array
@@ -74,6 +91,9 @@ class PdoConnection
         return $this->options;
     }
 
+    /**
+     * Check if connected to database.
+     */
     public function isConnected(): bool
     {
         return $this->isConnected;

@@ -18,10 +18,12 @@ class PdoQueryBuilder
      * @var array<array>
      */
     protected array $querySelect = [];
+
     /**
      * @var array<array>
      */
     protected array $queryJoin = [];
+
     /**
      * @var array<array>
      */
@@ -513,7 +515,7 @@ class PdoQueryBuilder
         return sprintf('`%s`', $expression);
     }
 
-    protected function isExpressionQuoted(string $expression): bool
+    protected function isQuotedExpression(string $expression): bool
     {
         $offsetEnd = -1 + mb_strlen($expression);
         if ('`' === $expression[0] && '`' === $expression[$offsetEnd]) {
