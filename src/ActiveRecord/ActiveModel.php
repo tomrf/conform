@@ -172,7 +172,7 @@ class ActiveModel extends Model
     /**
      * @ignore
      *
-     * @param array<string,mixed>|Row $data *
+     * @param array<string,mixed>|Row $data
      *
      * @return ActiveModel
      */
