@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Conform\Bridge\Pdo;
+namespace Tomrf\Conform\Pdo;
 
 use Exception;
 use PDO;
 use PDOStatement;
-use Tomrf\Conform\Abstract\QueryExecuter;
 use Tomrf\Conform\Row;
 
-class PdoQueryExecuter extends QueryExecuter
+class PdoQueryExecuter
 {
     public function __construct(
         protected PdoConnection $connection,

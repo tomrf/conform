@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use Tomrf\Conform\Bridge\Pdo\PdoConnection;
-use Tomrf\Conform\Bridge\Pdo\PdoConnectionCredentials;
-use Tomrf\Conform\Bridge\Pdo\PdoQueryBuilder;
-use Tomrf\Conform\Bridge\Pdo\PdoQueryExecuter;
+use Tomrf\Conform\Pdo\PdoConnection;
+use Tomrf\Conform\Pdo\PdoConnectionCredentials;
+use Tomrf\Conform\Pdo\PdoQueryBuilder;
+use Tomrf\Conform\Pdo\PdoQueryExecuter;
 use Tomrf\Conform\Factory;
 use Tomrf\Conform\Row;
 

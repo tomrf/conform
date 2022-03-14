@@ -2,17 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Conform\Bridge\Pdo;
+namespace Tomrf\Conform\Pdo;
 
 use DomainException;
 use Exception;
 use InvalidArgumentException;
 use RuntimeException;
-use Tomrf\Conform\Abstract\QueryBuilder;
-use Tomrf\Conform\Interface\QueryBuilderInterface;
 use Tomrf\Conform\Row;
 
-class PdoQueryBuilder extends QueryBuilder implements QueryBuilderInterface
+class PdoQueryBuilder
 {
     protected string $table = '';
 

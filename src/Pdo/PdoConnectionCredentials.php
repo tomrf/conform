@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Conform\Bridge\Pdo;
+namespace Tomrf\Conform\Pdo;
 
-use Tomrf\Conform\Abstract\ConnectionCredentials;
-use Tomrf\Conform\Interface\ConnectionCredentialsInterface;
-
-class PdoConnectionCredentials extends ConnectionCredentials implements ConnectionCredentialsInterface
+class PdoConnectionCredentials
 {
     public function __construct(
         protected string $dsn,
