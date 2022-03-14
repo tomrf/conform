@@ -292,10 +292,15 @@ class PdoQueryBuilder
         );
     }
 
+    public function getQuery(): string
+    {
+        return $this->buildQuery();
+    }
+
     /**
      * @return array<string,mixed>
      */
-    protected function getQueryParameters(): array
+    public function getQueryParameters(): array
     {
         return $this->queryParameters;
     }
@@ -303,7 +308,7 @@ class PdoQueryBuilder
     protected function buildQuerySelectExpression(): string
     {
         if (0 === \count($this->querySelect)) {
-            return '*';
+            return sprintf('%s.*', $this->quoteExpression($this->table));
         }
 
         $selectExpression = '';
