@@ -6,8 +6,8 @@ namespace Tomrf\Conform\Pdo;
 
 class QueryBuilder
 {
-    protected $table;
-    protected $statement;
+    protected string $table;
+    protected string $statement;
 
     public function selectFrom(string $table): static
     {

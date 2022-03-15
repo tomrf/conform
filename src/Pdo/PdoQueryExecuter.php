@@ -28,6 +28,11 @@ class PdoQueryExecuter
         return $this->connection->getPdo()->lastInsertId();
     }
 
+    /**
+     * @param array<string,mixed> $queryParameters
+     *
+     * @throws Exception
+     */
     public function execute(string $query, array $queryParameters): static
     {
         $this->pdoStatement = $this->executeQuery($query, $queryParameters);
@@ -35,11 +40,6 @@ class PdoQueryExecuter
         return $this;
     }
 
-    /**
-     * @param array<string,mixed> $queryParameters
-     *
-     * @throws Exception
-     */
     public function findOne(): Row|bool
     {
         $row = $this->fetchRow($this->pdoStatement);
@@ -52,10 +52,6 @@ class PdoQueryExecuter
     }
 
     /**
-     * @param array<string,mixed> $queryParameters
-     *
-     * @throws Exception
-     *
      * @return array<int,mixed>
      */
     public function findMany(): array

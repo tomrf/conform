@@ -9,10 +9,25 @@ use InvalidArgumentException;
 
 class PdoQueryBuilder extends QueryBuilder
 {
+    /**
+     * @var array<int|string,array>
+     */
     protected array $select = [];
+    /**
+     * @var array<int|string,array>
+     */
     protected array $join = [];
+    /**
+     * @var array<int|string,array>
+     */
     protected array $where = [];
+    /**
+     * @var array<int|string,array>
+     */
     protected array $order = [];
+    /**
+     * @var array<int|string,array>
+     */
     protected array $set = [];
 
     protected int $limit = -1;
@@ -56,21 +71,9 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    // public function update(): string|false
-    // {
-    //     $this->isUpdate = true;
-
-    //     $this->assertQueryState();
-
-    //     return $this->queryExecuter->update(
-    //         $this->buildQuery(),
-    //         $this->queryParameters
-    //     );
-    // }
-
-    public function select(string ...$params): self
+    public function select(string ...$columns): self
     {
-        foreach ($params as $column) {
+        foreach ($columns as $column) {
             $this->select[] = [
                 'expression' => $this->quoteExpression(trim($column)),
             ];
@@ -329,7 +332,7 @@ class PdoQueryBuilder extends QueryBuilder
                 $statement .= sprintf('%s=%s', $this->quoteExpression((string) $column), $value);
             } else {
                 $statement .= sprintf('%s=:%s', $this->quoteExpression((string) $column), $column);
-                $this->queryParameters[$column] = $value;
+                $this->queryParameters[(string) $column] = $value;
             }
 
             if ($column !== array_key_last($this->set)) {
@@ -356,7 +359,7 @@ class PdoQueryBuilder extends QueryBuilder
             }
 
             if (isset($where['value'])) {
-                $this->queryParameters[$key] = $where['value'];
+                $this->queryParameters[(string) $key] = $where['value'];
             }
         }
 

@@ -41,17 +41,6 @@ class PdoConnection
         );
     }
 
-    /**
-     * Create a query builder to query a table.
-     */
-    public function queryTable(string $tableName): PdoQueryBuilder
-    {
-        /** @var PdoQueryBuilder */
-        $queryBuilder = $this->makeQueryBuilder();
-
-        return $queryBuilder->forTable($tableName);
-    }
-
     public function exec(string $statement): int|false
     {
         return $this->pdo->exec($statement);
