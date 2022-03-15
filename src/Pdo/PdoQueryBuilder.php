@@ -5,64 +5,31 @@ declare(strict_types=1);
 namespace Tomrf\Conform\Pdo;
 
 use DomainException;
-use Exception;
 use InvalidArgumentException;
-use RuntimeException;
-use Tomrf\Conform\Row;
 
-class PdoQueryBuilder
+class PdoQueryBuilder extends QueryBuilder
 {
-    protected string $table = '';
+    protected array $select = [];
+    protected array $join = [];
+    protected array $where = [];
+    protected array $order = [];
+    protected array $set = [];
 
-    /**
-     * @var array<array>
-     */
-    protected array $querySelect = [];
+    protected int $limit = -1;
+    protected int $offset = -1;
 
-    /**
-     * @var array<array>
-     */
-    protected array $queryJoin = [];
+    protected ?string $onDuplicateKey = null;
 
-    /**
-     * @var array<array>
-     */
-    protected array $queryWhere = [];
-    /**
-     * @var array<array>
-     */
-    protected array $queryOrderBy = [];
-    /**
-     * @var array<array>
-     */
-    protected array $queryInsert = [];
     /**
      * @var array<string,mixed>
      */
     protected array $queryParameters = [];
 
-    protected int $queryLimit = -1;
-    protected int $queryLimitOffset = -1;
-
-    protected ?string $onDuplicate = null;
-
-    public function __construct(
-        protected PdoQueryExecuter $queryExecuter,
-    ) {
-    }
-
-    public function forTable(string $table): self
-    {
-        $this->table = $table;
-
-        return $this;
-    }
-
     public function set(string $column, mixed $value): self
     {
         $key = trim($column);
 
-        $this->queryInsert[$key] = [
+        $this->set[$key] = [
             'value' => $value,
             'raw' => false,
         ];
@@ -74,7 +41,7 @@ class PdoQueryBuilder
     {
         $key = trim($column);
 
-        $this->queryInsert[$key] = [
+        $this->set[$key] = [
             'value' => $expression,
             'raw' => true,
         ];
@@ -84,34 +51,27 @@ class PdoQueryBuilder
 
     public function onDuplicateKey(string $expression): self
     {
-        $this->onDuplicate = trim($expression);
+        $this->onDuplicateKey = trim($expression);
 
         return $this;
     }
 
-    /**
-     * @param array<string, mixed> $keyValue
-     *
-     * @throws Exception
-     */
-    public function insert(array $keyValue): string|false
-    {
-        foreach ($keyValue as $key => $value) {
-            $this->set($key, $value);
-        }
+    // public function update(): string|false
+    // {
+    //     $this->isUpdate = true;
 
-        $this->assertQueryState();
+    //     $this->assertQueryState();
 
-        return $this->queryExecuter->insert(
-            $this->buildQuery(),
-            $this->queryParameters
-        );
-    }
+    //     return $this->queryExecuter->update(
+    //         $this->buildQuery(),
+    //         $this->queryParameters
+    //     );
+    // }
 
     public function select(string ...$params): self
     {
         foreach ($params as $column) {
-            $this->querySelect[] = [
+            $this->select[] = [
                 'expression' => $this->quoteExpression(trim($column)),
             ];
         }
@@ -121,7 +81,7 @@ class PdoQueryBuilder
 
     public function selectAs(string $expression, string $alias): self
     {
-        $this->querySelect[] = [
+        $this->select[] = [
             'expression' => $this->quoteExpression(trim($expression)),
             'alias' => $this->quoteString(trim($alias)),
         ];
@@ -132,7 +92,7 @@ class PdoQueryBuilder
     public function selectRaw(string ...$params): self
     {
         foreach ($params as $expression) {
-            $this->querySelect[] = [
+            $this->select[] = [
                 'expression' => trim($expression),
             ];
         }
@@ -142,7 +102,7 @@ class PdoQueryBuilder
 
     public function selectRawAs(string $expression, string $alias): self
     {
-        $this->querySelect[] = [
+        $this->select[] = [
             'expression' => trim($expression),
             'alias' => $this->quoteString(trim($alias)),
         ];
@@ -152,9 +112,9 @@ class PdoQueryBuilder
 
     public function alias(string $expression, string $alias): self
     {
-        foreach ($this->querySelect as $i => $select) {
+        foreach ($this->select as $i => $select) {
             if ($select['expression'] === $expression) {
-                $this->querySelect[$i]['alias'] = $this->quoteString(trim($alias));
+                $this->select[$i]['alias'] = $this->quoteString(trim($alias));
             }
         }
 
@@ -163,7 +123,7 @@ class PdoQueryBuilder
 
     public function join(string $table, string $joinCondition): self
     {
-        $this->queryJoin[] = [
+        $this->join[] = [
             'table' => trim($table),
             'condition' => trim($joinCondition),
         ];
@@ -171,12 +131,27 @@ class PdoQueryBuilder
         return $this;
     }
 
+    public function whereRaw(string $expression): self
+    {
+        $key = (string) crc32($expression);
+        $this->where[$key] = [
+            'condition' => sprintf('%s', $expression),
+        ];
+
+        return $this;
+    }
+
+    public function whereColumnRaw(string $column, string $expression): self
+    {
+        return $this->whereRaw(sprintf('%s %s', $this->quoteExpression(trim($column)), $expression));
+    }
+
     public function where(string $column, string $operator, mixed $value): self
     {
-        $this->queryWhere[] = [
-            'left' => trim($column),
-            'right' => \is_string($value) ? trim($value) : $value,
-            'operator' => trim($operator),
+        $key = trim($column);
+        $this->where[$key] = [
+            'condition' => sprintf('%s %s :%s', $this->quoteExpression(trim($column)), trim($operator), trim($column)),
+            'value' => $value,
         ];
 
         return $this;
@@ -194,32 +169,17 @@ class PdoQueryBuilder
 
     public function whereNull(string $column): self
     {
-        return $this->where($column, 'IS', 'NULL');
+        return $this->whereColumnRaw($column, 'IS NULL');
     }
 
     public function whereNotNull(string $column): self
     {
-        return $this->where($column, 'IS NOT', 'NULL');
-    }
-
-    /**
-     * @param null|array<string,mixed> $namedParameters
-     *
-     * @return PdoQueryBuilder
-     */
-    public function whereRaw(string $clause, ?array $namedParameters = null): self
-    {
-        $this->queryWhere[] = [
-            'raw' => $clause,
-            'parameters' => $namedParameters,
-        ];
-
-        return $this;
+        return $this->whereColumnRaw($column, 'IS NOT NULL');
     }
 
     public function orderByAsc(string $column): self
     {
-        $this->queryOrderBy[] = [
+        $this->order[] = [
             'column' => trim($column),
             'direction' => 'ASC',
         ];
@@ -229,7 +189,7 @@ class PdoQueryBuilder
 
     public function orderByDesc(string $column): self
     {
-        $this->queryOrderBy[] = [
+        $this->order[] = [
             'column' => trim($column),
             'direction' => 'DESC',
         ];
@@ -243,7 +203,7 @@ class PdoQueryBuilder
             throw new InvalidArgumentException('Illegal (negative) LIMIT value specified');
         }
 
-        $this->queryLimit = $limit;
+        $this->limit = $limit;
 
         if (null !== $offset) {
             return $this->offset($offset);
@@ -257,39 +217,13 @@ class PdoQueryBuilder
         if ($offset < 0) {
             throw new InvalidArgumentException('Illegal (negative) OFFSET value specified');
         }
-        $this->queryLimitOffset = $offset;
+        $this->offset = $offset;
 
         if (null !== $limit) {
             return $this->limit($limit);
         }
 
         return $this;
-    }
-
-    public function findOne(): Row|bool
-    {
-        $this->queryLimit = 1;
-        $this->assertQueryState();
-
-        return $this->queryExecuter->findOne(
-            $this->buildQuery(),
-            $this->queryParameters
-        );
-    }
-
-    /**
-     * @throws Exception
-     *
-     * @return null|array<int,mixed>
-     */
-    public function findMany(): ?array
-    {
-        $this->assertQueryState();
-
-        return $this->queryExecuter->findMany(
-            $this->buildQuery(),
-            $this->getQueryParameters()
-        );
     }
 
     public function getQuery(): string
@@ -305,22 +239,27 @@ class PdoQueryBuilder
         return $this->queryParameters;
     }
 
+    public function getQueryAndParameters(): mixed
+    {
+        return [$this->buildQuery(), $this->queryParameters];
+    }
+
     protected function buildQuerySelectExpression(): string
     {
-        if (0 === \count($this->querySelect)) {
+        if (0 === \count($this->select)) {
             return sprintf('%s.*', $this->quoteExpression($this->table));
         }
 
         $selectExpression = '';
 
-        foreach ($this->querySelect as $key => $select) {
+        foreach ($this->select as $key => $select) {
             $selectExpression .= sprintf(
                 '%s%s',
                 $select['expression'],
                 isset($select['alias']) ? (' AS '.$select['alias']) : ''
             );
 
-            if ($key !== array_key_last($this->querySelect)) {
+            if ($key !== array_key_last($this->select)) {
                 $selectExpression .= ',';
             }
         }
@@ -331,7 +270,7 @@ class PdoQueryBuilder
     protected function buildQueryJoinClause(): string
     {
         $joinClause = '';
-        foreach ($this->queryJoin as $join) {
+        foreach ($this->join as $join) {
             $joinClause .= sprintf(
                 ' JOIN %s ON %s',
                 $this->quoteExpression($join['table']),
@@ -347,11 +286,11 @@ class PdoQueryBuilder
         $columns = '';
         $values = '';
 
-        if (0 === \count($this->queryInsert)) {
+        if (0 === \count($this->set)) {
             return '';
         }
 
-        foreach ($this->queryInsert as $column => $valueData) {
+        foreach ($this->set as $column => $valueData) {
             $isRaw = $valueData['raw'];
             $value = $valueData['value'];
 
@@ -374,55 +313,50 @@ class PdoQueryBuilder
         );
     }
 
+    protected function buildQuerySetStatement(): string
+    {
+        if (0 === \count($this->set)) {
+            return '';
+        }
+
+        $statement = '';
+
+        foreach ($this->set as $column => $assignment) {
+            $isRaw = $assignment['raw'];
+            $value = $assignment['value'];
+
+            if (true === $isRaw) {
+                $statement .= sprintf('%s=%s', $this->quoteExpression((string) $column), $value);
+            } else {
+                $statement .= sprintf('%s=:%s', $this->quoteExpression((string) $column), $column);
+                $this->queryParameters[$column] = $value;
+            }
+
+            if ($column !== array_key_last($this->set)) {
+                $statement .= ', ';
+            }
+        }
+
+        return $statement;
+    }
+
     protected function buildQueryWhereCondition(): string
     {
-        if (0 === \count($this->queryWhere)) {
+        if (0 === \count($this->where)) {
             return '';
         }
 
         $whereCondition = ' WHERE ';
 
-        foreach ($this->queryWhere as $key => $where) {
-            if (isset($where['raw'])) {
-                $whereCondition .= sprintf(
-                    '%s%s',
-                    $where['raw'],
-                    ($key !== array_key_last($this->queryWhere)) ? ' AND ' : ''
-                );
-                if (null !== $where['parameters']) {
-                    $this->queryParameters = array_merge($this->queryParameters, $where['parameters']);
-                }
-            } elseif ('IS' === mb_substr(mb_strtoupper($where['operator']), 0, 2)) {
-                $whereCondition .= sprintf(
-                    '%s %s %s%s',
-                    $this->quoteExpression($where['left']),
-                    mb_strtoupper($where['operator']),
-                    $where['right'],
-                    ($key !== array_key_last($this->queryWhere)) ? ' AND ' : ''
-                );
-            } else {
-                if (isset($this->queryParameters[$where['left']])) {
-                    throw new RuntimeException(sprintf(
-                        'Duplicate parameter "%s" in WHERE condition for table "%s"',
-                        $where['left'],
-                        $this->table
-                    ));
-                }
+        foreach ($this->where as $key => $where) {
+            $whereCondition .= $where['condition'];
 
-                $parameterName = str_replace('.', '_', $where['left']);
-                if (\is_array($parameterName)) {
-                    throw new RuntimeException('Unexpected value: got array from str_replace()');
-                }
+            if (array_key_last($this->where) !== $key) {
+                $whereCondition .= ' AND ';
+            }
 
-                $this->queryParameters[$parameterName] = $where['right'];
-
-                $whereCondition .= sprintf(
-                    '%s%s:%s%s',
-                    $this->quoteExpression($where['left']),
-                    $where['operator'],
-                    $parameterName,
-                    ($key !== array_key_last($this->queryWhere)) ? ' AND ' : ''
-                );
+            if (isset($where['value'])) {
+                $this->queryParameters[$key] = $where['value'];
             }
         }
 
@@ -431,17 +365,17 @@ class PdoQueryBuilder
 
     protected function buildQueryOrderByClause(): string
     {
-        if (0 === \count($this->queryOrderBy)) {
+        if (0 === \count($this->order)) {
             return '';
         }
 
         $orderByClause = ' ORDER BY ';
-        foreach ($this->queryOrderBy as $key => $orderBy) {
+        foreach ($this->order as $key => $orderBy) {
             $orderByClause .= sprintf(
                 '%s %s%s',
                 $this->quoteExpression($orderBy['column']),
                 $orderBy['direction'],
-                ($key !== array_key_last($this->queryOrderBy)) ? ', ' : ''
+                ($key !== array_key_last($this->order)) ? ', ' : ''
             );
         }
 
@@ -450,12 +384,51 @@ class PdoQueryBuilder
 
     protected function buildQuery(): string
     {
-        if (\count($this->queryInsert) > 0) {
+        // INSERT [LOW_PRIORITY | DELAYED | HIGH_PRIORITY] [IGNORE]
+        //     [INTO] tbl_name
+        //     SET assignment_list
+        //     [ON DUPLICATE KEY UPDATE assignment_list]
+
+        if (str_starts_with($this->statement, 'INSERT')) {
             return trim(sprintf(
                 'INSERT INTO %s %s %s',
                 $this->quoteExpression($this->table),
                 $this->buildQueryInsertStatement(),
-                $this->onDuplicate ? 'ON DUPLICATE KEY '.$this->onDuplicate : ''
+                $this->onDuplicateKey ? 'ON DUPLICATE KEY '.$this->onDuplicateKey : ''
+            ));
+        }
+
+        // UPDATE [LOW_PRIORITY] [IGNORE] table_reference
+        //     SET assignment_list
+        //     [WHERE where_condition]
+        //     [ORDER BY ...]
+        //     [LIMIT row_count]
+
+        if (str_starts_with($this->statement, 'UPDATE')) {
+            return trim(sprintf(
+                'UPDATE %s SET %s%s%s%s%s',
+                $this->quoteExpression($this->table),
+                $this->buildQuerySetStatement(),
+                $this->buildQueryWhereCondition(),
+                $this->buildQueryOrderByClause(),
+                (-1 !== $this->limit) ? sprintf(' LIMIT %d', $this->limit) : '',
+                (-1 !== $this->offset) ? sprintf(' OFFSET %d', $this->offset) : ''
+            ));
+        }
+
+        // DELETE [LOW_PRIORITY] [QUICK] [IGNORE] FROM tbl_name [[AS] tbl_alias]
+        //     [WHERE where_condition]
+        //     [ORDER BY ...]
+        //     [LIMIT row_count]
+
+        if (str_starts_with($this->statement, 'DELETE')) {
+            return trim(sprintf(
+                'DELETE FROM %s%s%s%s%s',
+                $this->quoteExpression($this->table),
+                $this->buildQueryWhereCondition(),
+                $this->buildQueryOrderByClause(),
+                (-1 !== $this->limit) ? sprintf(' LIMIT %d', $this->limit) : '',
+                (-1 !== $this->offset) ? sprintf(' OFFSET %d', $this->offset) : ''
             ));
         }
 
@@ -466,14 +439,14 @@ class PdoQueryBuilder
             $this->buildQueryJoinClause(),
             $this->buildQueryWhereCondition(),
             $this->buildQueryOrderByClause(),
-            (-1 !== $this->queryLimit) ? sprintf(' LIMIT %d', $this->queryLimit) : '',
-            (-1 !== $this->queryLimitOffset) ? sprintf(' OFFSET %d', $this->queryLimitOffset) : ''
+            (-1 !== $this->limit) ? sprintf(' LIMIT %d', $this->limit) : '',
+            (-1 !== $this->offset) ? sprintf(' OFFSET %d', $this->offset) : ''
         );
     }
 
     protected function assertQueryState(): void
     {
-        if (-1 !== $this->queryLimitOffset && -1 === $this->queryLimit) {
+        if (-1 !== $this->offset && -1 === $this->limit) {
             throw new DomainException('Query validation failed: OFFSET specified without LIMIT clause');
         }
     }

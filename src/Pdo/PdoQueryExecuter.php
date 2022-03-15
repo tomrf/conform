@@ -11,19 +11,28 @@ use Tomrf\Conform\Row;
 
 class PdoQueryExecuter
 {
+    protected PDOStatement $pdoStatement;
+
     public function __construct(
         protected PdoConnection $connection,
     ) {
     }
 
-    /**
-     * @param array<string,mixed> $queryParameters
-     */
-    public function insert(string $query, array $queryParameters): string|false
+    public function getRowCount(): int
     {
-        $this->executeQuery($query, $queryParameters);
+        return $this->pdoStatement->rowCount();
+    }
 
+    public function getLastInsertId(): string
+    {
         return $this->connection->getPdo()->lastInsertId();
+    }
+
+    public function execute(string $query, array $queryParameters): static
+    {
+        $this->pdoStatement = $this->executeQuery($query, $queryParameters);
+
+        return $this;
     }
 
     /**
@@ -31,10 +40,9 @@ class PdoQueryExecuter
      *
      * @throws Exception
      */
-    public function findOne(string $query, array $queryParameters): Row|bool
+    public function findOne(): Row|bool
     {
-        $statement = $this->executeQuery($query, $queryParameters);
-        $row = $this->fetchRow($statement);
+        $row = $this->fetchRow($this->pdoStatement);
 
         if (false === $row) {
             return false;
@@ -50,11 +58,9 @@ class PdoQueryExecuter
      *
      * @return array<int,mixed>
      */
-    public function findMany(string $query, array $queryParameters): array
+    public function findMany(): array
     {
-        $statement = $this->executeQuery($query, $queryParameters);
-
-        return $this->fetchAllRows($statement);
+        return $this->fetchAllRows($this->pdoStatement);
     }
 
     /**
