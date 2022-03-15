@@ -138,7 +138,7 @@ class PdoQueryBuilder extends QueryBuilder
     {
         $key = (string) crc32($expression);
         $this->where[$key] = [
-            'condition' => sprintf('%s', $expression),
+            'condition' => $expression,
         ];
 
         return $this;
@@ -146,15 +146,26 @@ class PdoQueryBuilder extends QueryBuilder
 
     public function whereColumnRaw(string $column, string $expression): self
     {
-        return $this->whereRaw(sprintf('%s %s', $this->quoteExpression(trim($column)), $expression));
+        return $this->whereRaw(
+            sprintf(
+                '%s %s',
+                $this->quoteExpression(trim($column)),
+                $expression
+            )
+        );
     }
 
     public function where(string $column, string $operator, mixed $value): self
     {
         $key = trim($column);
         $this->where[$key] = [
-            'condition' => sprintf('%s %s :%s', $this->quoteExpression(trim($column)), trim($operator), trim($column)),
             'value' => $value,
+            'condition' => sprintf(
+                '%s %s :%s',
+                $this->quoteExpression(trim($column)),
+                trim($operator),
+                trim($column)
+            ),
         ];
 
         return $this;
@@ -203,7 +214,7 @@ class PdoQueryBuilder extends QueryBuilder
     public function limit(int $limit, ?int $offset = null): self
     {
         if ($limit < 0) {
-            throw new InvalidArgumentException('Illegal (negative) LIMIT value specified');
+            throw new InvalidArgumentException('Negative limit not allowed');
         }
 
         $this->limit = $limit;
@@ -215,16 +226,13 @@ class PdoQueryBuilder extends QueryBuilder
         return $this;
     }
 
-    public function offset(int $offset, ?int $limit = null): self
+    public function offset(int $offset): self
     {
         if ($offset < 0) {
-            throw new InvalidArgumentException('Illegal (negative) OFFSET value specified');
+            throw new InvalidArgumentException('Negative offset not allowed');
         }
-        $this->offset = $offset;
 
-        if (null !== $limit) {
-            return $this->limit($limit);
-        }
+        $this->offset = $offset;
 
         return $this;
     }
@@ -329,9 +337,18 @@ class PdoQueryBuilder extends QueryBuilder
             $value = $assignment['value'];
 
             if (true === $isRaw) {
-                $statement .= sprintf('%s=%s', $this->quoteExpression((string) $column), $value);
+                $statement .= sprintf(
+                    '%s = %s',
+                    $this->quoteExpression((string) $column),
+                    $value
+                );
             } else {
-                $statement .= sprintf('%s=:%s', $this->quoteExpression((string) $column), $column);
+                $statement .= sprintf(
+                    '%s = :%s',
+                    $this->quoteExpression((string) $column),
+                    $column
+                );
+
                 $this->queryParameters[(string) $column] = $value;
             }
 
@@ -450,7 +467,9 @@ class PdoQueryBuilder extends QueryBuilder
     protected function assertQueryState(): void
     {
         if (-1 !== $this->offset && -1 === $this->limit) {
-            throw new DomainException('Query validation failed: OFFSET specified without LIMIT clause');
+            throw new DomainException(
+                'Invalid query: offset specified without a limit clause'
+            );
         }
     }
 
