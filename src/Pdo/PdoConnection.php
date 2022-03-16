@@ -7,8 +7,9 @@ namespace Tomrf\Conform\Pdo;
 use PDO;
 use PDOStatement;
 use RuntimeException;
+use Tomrf\Conform\Interface\ConnectionInterface;
 
-class PdoConnection
+class PdoConnection implements ConnectionInterface
 {
     protected PDO $pdo;
     protected bool $isConnected = false;

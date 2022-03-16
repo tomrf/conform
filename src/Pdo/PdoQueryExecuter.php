@@ -7,14 +7,18 @@ namespace Tomrf\Conform\Pdo;
 use PDO;
 use PDOException;
 use PDOStatement;
-use Tomrf\Conform\Row;
+use Tomrf\Conform\Data\Row;
+use Tomrf\Conform\Data\Value;
+use Tomrf\Conform\Interface\ConnectionInterface;
+use Tomrf\Conform\Interface\QueryBuilderInterface;
+use Tomrf\Conform\Interface\QueryExecuterInterface;
 
-class PdoQueryExecuter
+class PdoQueryExecuter implements QueryExecuterInterface
 {
     protected PDOStatement $pdoStatement;
 
     public function __construct(
-        protected PdoConnection $connection,
+        protected ConnectionInterface $connection
     ) {
     }
 
@@ -34,17 +38,34 @@ class PdoQueryExecuter
         return $this->connection->getPdo()->lastInsertId();
     }
 
+    // /**
+    //  * Prepare and execute PDOStatement from query string and array of
+    //  * parameters.
+    //  *
+    //  * @param array<string,mixed> $queryParameters
+    //  *
+    //  * @throws PDOException
+    //  */
+    // public function execute(string $query, array $queryParameters): static
+    // {
+    //     $this->pdoStatement = $this->executeQuery($query, $queryParameters);
+    //     return $this;
+    // }
+
     /**
-     * Prepare and execute PDOStatement from query string and array of
-     * parameters.
+     * Prepare and execute PDOStatement from an instance of
+     * QueryBuilderInterface.
      *
      * @param array<string,mixed> $queryParameters
      *
      * @throws PDOException
      */
-    public function execute(string $query, array $queryParameters): static
+    public function execute(QueryBuilderInterface $queryBuilder): static
     {
-        $this->pdoStatement = $this->executeQuery($query, $queryParameters);
+        $this->pdoStatement = $this->executeQuery(
+            $queryBuilder->getQuery(),
+            $queryBuilder->getQueryParameters()
+        );
 
         return $this;
     }
@@ -54,6 +75,8 @@ class PdoQueryExecuter
      */
     public function findOne(): ?Row
     {
+        // $this->then__execute($this);
+
         $row = $this->fetchRow($this->pdoStatement);
 
         if (false === $row) {
@@ -116,6 +139,13 @@ class PdoQueryExecuter
     {
         $row = $statement->fetch(PDO::FETCH_ASSOC);
 
-        return (false === $row) ? false : new Row($row);
+        $values = [];
+
+        foreach ($row as $key => $value) {
+            // @todo keep key/column name in Value .. or Row?
+            $values[$key] = new Value($value);
+        }
+
+        return (false === $row) ? false : new Row($values);
     }
 }

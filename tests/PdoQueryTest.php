@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
+use Tomrf\Conform\Data\Row;
+use Tomrf\Conform\Factory\Factory;
 use Tomrf\Conform\Pdo\PdoConnection;
 use Tomrf\Conform\Pdo\PdoConnectionCredentials;
-use Tomrf\Conform\SqlQueryBuilder;
 use Tomrf\Conform\Pdo\PdoQueryExecuter;
-use Tomrf\Conform\Factory;
-use Tomrf\Conform\Row;
+use Tomrf\Conform\SqlQueryBuilder;
 
 /**
  * @internal

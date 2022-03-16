@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Conform;
+namespace Tomrf\Conform\Data;
 
 class Row extends ImmutableArrayObject
 {

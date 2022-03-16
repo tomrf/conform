@@ -5,10 +5,17 @@ declare(strict_types=1);
 namespace Tomrf\Conform;
 
 use DomainException;
-use InvalidArgumentException;
 
-class SqlQueryBuilder extends QueryBuilder
+class SqlConstructor
 {
+    protected string $table;
+    protected string $statement;
+
+    protected int $limit = -1;
+    protected int $offset = -1;
+
+    protected ?string $onDuplicateKey = null;
+
     /**
      * @var array<int|string,array>
      */
@@ -29,217 +36,16 @@ class SqlQueryBuilder extends QueryBuilder
      * @var array<int|string,array>
      */
     protected array $set = [];
-
-    protected int $limit = -1;
-    protected int $offset = -1;
-
-    protected ?string $onDuplicateKey = null;
-
     /**
      * @var array<string,mixed>
      */
     protected array $queryParameters = [];
 
-    public function set(string $column, mixed $value): self
-    {
-        $key = trim($column);
-
-        $this->set[$key] = [
-            'value' => $value,
-            'raw' => false,
-        ];
-
-        return $this;
-    }
-
-    public function setRaw(string $column, string $expression): self
-    {
-        $key = trim($column);
-
-        $this->set[$key] = [
-            'value' => $expression,
-            'raw' => true,
-        ];
-
-        return $this;
-    }
-
-    public function onDuplicateKey(string $expression): self
-    {
-        $this->onDuplicateKey = trim($expression);
-
-        return $this;
-    }
-
-    public function select(string ...$columns): self
-    {
-        foreach ($columns as $column) {
-            $this->select[] = [
-                'expression' => $this->quoteExpression(trim($column)),
-            ];
-        }
-
-        return $this;
-    }
-
-    public function selectAs(string $expression, string $alias): self
-    {
-        $this->select[] = [
-            'expression' => $this->quoteExpression(trim($expression)),
-            'alias' => $this->quoteString(trim($alias)),
-        ];
-
-        return $this;
-    }
-
-    public function selectRaw(string ...$params): self
-    {
-        foreach ($params as $expression) {
-            $this->select[] = [
-                'expression' => trim($expression),
-            ];
-        }
-
-        return $this;
-    }
-
-    public function selectRawAs(string $expression, string $alias): self
-    {
-        $this->select[] = [
-            'expression' => trim($expression),
-            'alias' => $this->quoteString(trim($alias)),
-        ];
-
-        return $this;
-    }
-
-    public function alias(string $expression, string $alias): self
-    {
-        foreach ($this->select as $i => $select) {
-            if ($select['expression'] === $expression) {
-                $this->select[$i]['alias'] = $this->quoteString(trim($alias));
-            }
-        }
-
-        return $this;
-    }
-
-    public function join(string $table, string $joinCondition): self
-    {
-        $this->join[] = [
-            'table' => trim($table),
-            'condition' => trim($joinCondition),
-        ];
-
-        return $this;
-    }
-
-    public function whereRaw(string $expression): self
-    {
-        $key = (string) crc32($expression);
-        $this->where[$key] = [
-            'condition' => $expression,
-        ];
-
-        return $this;
-    }
-
-    public function whereColumnRaw(string $column, string $expression): self
-    {
-        return $this->whereRaw(
-            sprintf(
-                '%s %s',
-                $this->quoteExpression(trim($column)),
-                $expression
-            )
-        );
-    }
-
-    public function where(string $column, string $operator, mixed $value): self
-    {
-        $key = trim($column);
-        $this->where[$key] = [
-            'value' => $value,
-            'condition' => sprintf(
-                '%s %s :%s',
-                $this->quoteExpression(trim($column)),
-                trim($operator),
-                trim($column)
-            ),
-        ];
-
-        return $this;
-    }
-
-    public function whereEqual(string $column, mixed $value): self
-    {
-        return $this->where($column, '=', $value);
-    }
-
-    public function whereNotEqual(string $column, mixed $value): self
-    {
-        return $this->where($column, '!=', $value);
-    }
-
-    public function whereNull(string $column): self
-    {
-        return $this->whereColumnRaw($column, 'IS NULL');
-    }
-
-    public function whereNotNull(string $column): self
-    {
-        return $this->whereColumnRaw($column, 'IS NOT NULL');
-    }
-
-    public function orderByAsc(string $column): self
-    {
-        $this->order[] = [
-            'column' => trim($column),
-            'direction' => 'ASC',
-        ];
-
-        return $this;
-    }
-
-    public function orderByDesc(string $column): self
-    {
-        $this->order[] = [
-            'column' => trim($column),
-            'direction' => 'DESC',
-        ];
-
-        return $this;
-    }
-
-    public function limit(int $limit, ?int $offset = null): self
-    {
-        if ($limit < 0) {
-            throw new InvalidArgumentException('Negative limit not allowed');
-        }
-
-        $this->limit = $limit;
-
-        if (null !== $offset) {
-            return $this->offset($offset);
-        }
-
-        return $this;
-    }
-
-    public function offset(int $offset): self
-    {
-        if ($offset < 0) {
-            throw new InvalidArgumentException('Negative offset not allowed');
-        }
-
-        $this->offset = $offset;
-
-        return $this;
-    }
-
     public function getQuery(): string
     {
-        return $this->buildQuery();
+        $this->queryParameters = [];
+
+        return $this->compileQuery();
     }
 
     /**
@@ -250,12 +56,7 @@ class SqlQueryBuilder extends QueryBuilder
         return $this->queryParameters;
     }
 
-    public function getQueryAndParameters(): mixed
-    {
-        return [$this->buildQuery(), $this->queryParameters];
-    }
-
-    protected function buildQuerySelectExpression(): string
+    protected function _select(): string
     {
         if (0 === \count($this->select)) {
             return sprintf('%s.*', $this->quoteExpression($this->table));
@@ -278,7 +79,7 @@ class SqlQueryBuilder extends QueryBuilder
         return $selectExpression;
     }
 
-    protected function buildQueryJoinClause(): string
+    protected function _join(): string
     {
         $joinClause = '';
         foreach ($this->join as $join) {
@@ -292,7 +93,7 @@ class SqlQueryBuilder extends QueryBuilder
         return $joinClause;
     }
 
-    protected function buildQueryInsertStatement(): string
+    protected function _insert(): string
     {
         $columns = '';
         $values = '';
@@ -312,8 +113,8 @@ class SqlQueryBuilder extends QueryBuilder
             if (true === $isRaw) {
                 $values .= sprintf('%s, ', $value);
             } else {
-                $values .= sprintf(':%s, ', $column);
-                $this->queryParameters[$column] = $value;
+                $values .= '?, ';
+                $this->queryParameters[] = $value;
             }
         }
 
@@ -324,7 +125,7 @@ class SqlQueryBuilder extends QueryBuilder
         );
     }
 
-    protected function buildQuerySetStatement(): string
+    protected function _set(): string
     {
         if (0 === \count($this->set)) {
             return '';
@@ -344,12 +145,11 @@ class SqlQueryBuilder extends QueryBuilder
                 );
             } else {
                 $statement .= sprintf(
-                    '%s = :%s',
+                    '%s = ?',
                     $this->quoteExpression((string) $column),
-                    $column
                 );
 
-                $this->queryParameters[(string) $column] = $value;
+                $this->queryParameters[] = $value;
             }
 
             if ($column !== array_key_last($this->set)) {
@@ -360,7 +160,7 @@ class SqlQueryBuilder extends QueryBuilder
         return $statement;
     }
 
-    protected function buildQueryWhereCondition(): string
+    protected function _where(): string
     {
         if (0 === \count($this->where)) {
             return '';
@@ -376,14 +176,14 @@ class SqlQueryBuilder extends QueryBuilder
             }
 
             if (isset($where['value'])) {
-                $this->queryParameters[(string) $key] = $where['value'];
+                $this->queryParameters[] = $where['value'];
             }
         }
 
         return $whereCondition;
     }
 
-    protected function buildQueryOrderByClause(): string
+    protected function _orderBy(): string
     {
         if (0 === \count($this->order)) {
             return '';
@@ -402,7 +202,7 @@ class SqlQueryBuilder extends QueryBuilder
         return $orderByClause;
     }
 
-    protected function buildQuery(): string
+    protected function compileQuery(): string
     {
         // INSERT [LOW_PRIORITY | DELAYED | HIGH_PRIORITY] [IGNORE]
         //     [INTO] tbl_name
@@ -413,7 +213,7 @@ class SqlQueryBuilder extends QueryBuilder
             return trim(sprintf(
                 'INSERT INTO %s %s %s',
                 $this->quoteExpression($this->table),
-                $this->buildQueryInsertStatement(),
+                $this->_insert(),
                 $this->onDuplicateKey ? 'ON DUPLICATE KEY '.$this->onDuplicateKey : ''
             ));
         }
@@ -428,9 +228,9 @@ class SqlQueryBuilder extends QueryBuilder
             return trim(sprintf(
                 'UPDATE %s SET %s%s%s%s%s',
                 $this->quoteExpression($this->table),
-                $this->buildQuerySetStatement(),
-                $this->buildQueryWhereCondition(),
-                $this->buildQueryOrderByClause(),
+                $this->_set(),
+                $this->_where(),
+                $this->_orderBy(),
                 (-1 !== $this->limit) ? sprintf(' LIMIT %d', $this->limit) : '',
                 (-1 !== $this->offset) ? sprintf(' OFFSET %d', $this->offset) : ''
             ));
@@ -445,8 +245,8 @@ class SqlQueryBuilder extends QueryBuilder
             return trim(sprintf(
                 'DELETE FROM %s%s%s%s%s',
                 $this->quoteExpression($this->table),
-                $this->buildQueryWhereCondition(),
-                $this->buildQueryOrderByClause(),
+                $this->_where(),
+                $this->_orderBy(),
                 (-1 !== $this->limit) ? sprintf(' LIMIT %d', $this->limit) : '',
                 (-1 !== $this->offset) ? sprintf(' OFFSET %d', $this->offset) : ''
             ));
@@ -454,11 +254,11 @@ class SqlQueryBuilder extends QueryBuilder
 
         return sprintf(
             'SELECT %s FROM %s%s%s%s%s%s',
-            $this->buildQuerySelectExpression(),
+            $this->_select(),
             $this->quoteExpression($this->table),
-            $this->buildQueryJoinClause(),
-            $this->buildQueryWhereCondition(),
-            $this->buildQueryOrderByClause(),
+            $this->_join(),
+            $this->_where(),
+            $this->_orderBy(),
             (-1 !== $this->limit) ? sprintf(' LIMIT %d', $this->limit) : '',
             (-1 !== $this->offset) ? sprintf(' OFFSET %d', $this->offset) : ''
         );
@@ -508,6 +308,7 @@ class SqlQueryBuilder extends QueryBuilder
         if (!$this->isValidColumnName($expression)) {
             return $expression;
         }
+
         if ('*' === $expression) {
             return $expression;
         }
