@@ -5,7 +5,7 @@ declare(strict_types=1);
 use PHPUnit\Framework\TestCase;
 use Tomrf\Conform\Pdo\PdoConnection;
 use Tomrf\Conform\Pdo\PdoConnectionCredentials;
-use Tomrf\Conform\Pdo\PdoQueryBuilder;
+use Tomrf\Conform\SqlQueryBuilder;
 use Tomrf\Conform\Pdo\PdoQueryExecuter;
 use Tomrf\Conform\Factory;
 use Tomrf\Conform\Row;
@@ -24,7 +24,7 @@ final class PdoQueryTest extends TestCase
             new PdoConnectionCredentials(
                 PdoConnectionCredentials::DSN('sqlite', ':memory:')
             ),
-            new Factory(PdoQueryBuilder::class),
+            new Factory(SqlQueryBuilder::class),
             new Factory(PdoQueryExecuter::class),
         );
         $sql = file_get_contents('tests/sql/countries_schema.sql');
@@ -92,7 +92,7 @@ final class PdoQueryTest extends TestCase
     }
 
     // helpers
-    private function queryTestCountries(): PdoQueryBuilder
+    private function queryTestCountries(): SqlQueryBuilder
     {
         return self::$connection->queryTable('countries');
     }

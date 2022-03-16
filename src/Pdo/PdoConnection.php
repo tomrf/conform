@@ -7,7 +7,6 @@ namespace Tomrf\Conform\Pdo;
 use PDO;
 use PDOStatement;
 use RuntimeException;
-use Tomrf\Conform\Factory;
 
 class PdoConnection
 {
@@ -19,8 +18,6 @@ class PdoConnection
      */
     public function __construct(
         protected PdoConnectionCredentials $credentials,
-        protected Factory $queryBuilderFactory,
-        protected Factory $queryExecuterFactory,
         protected ?array $options = [
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -30,24 +27,16 @@ class PdoConnection
     }
 
     /**
-     * Create and return a query builder.
+     * Execute SQL statement via PDO exec() and return number of rows affected.
      */
-    public function makeQueryBuilder(): PdoQueryBuilder
-    {
-        return $this->queryBuilderFactory->make(
-            $this->queryExecuterFactory->make(
-                $this,
-            )
-        );
-    }
-
     public function exec(string $statement): int|false
     {
         return $this->pdo->exec($statement);
     }
 
     /**
-     * Execute statement.
+     * Execute statement via PDO query(), returning a result set as
+     * PDOStatement.
      */
     public function query(string $statement): PDOStatement|false
     {
@@ -71,7 +60,7 @@ class PdoConnection
     }
 
     /**
-     * Get PDO options array.
+     * Get PDO options array for this connections.
      *
      * @return null|array<int, int>
      */
@@ -81,13 +70,18 @@ class PdoConnection
     }
 
     /**
-     * Check if connected to database.
+     * Returns true if database connection has been established.
      */
     public function isConnected(): bool
     {
         return $this->isConnected;
     }
 
+    /**
+     * Connect to the database.
+     *
+     * @throws RuntimeException
+     */
     protected function connect(): void
     {
         try {

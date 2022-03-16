@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tomrf\Conform\Pdo;
 
-use Exception;
 use PDO;
+use PDOException;
 use PDOStatement;
 use Tomrf\Conform\Row;
 
@@ -18,20 +18,29 @@ class PdoQueryExecuter
     ) {
     }
 
+    /**
+     * Returns the number of rows affected by the last SQL statement.
+     */
     public function getRowCount(): int
     {
         return $this->pdoStatement->rowCount();
     }
 
+    /**
+     * Returns the last inserted row ID as string.
+     */
     public function getLastInsertId(): string
     {
         return $this->connection->getPdo()->lastInsertId();
     }
 
     /**
+     * Prepare and execute PDOStatement from query string and array of
+     * parameters.
+     *
      * @param array<string,mixed> $queryParameters
      *
-     * @throws Exception
+     * @throws PDOException
      */
     public function execute(string $query, array $queryParameters): static
     {
@@ -40,19 +49,24 @@ class PdoQueryExecuter
         return $this;
     }
 
-    public function findOne(): Row|bool
+    /**
+     * Fetch next row from the result set as Row.
+     */
+    public function findOne(): ?Row
     {
         $row = $this->fetchRow($this->pdoStatement);
 
         if (false === $row) {
-            return false;
+            return null;
         }
 
         return $row;
     }
 
     /**
-     * @return array<int,mixed>
+     * Fetch all rows from query result set.
+     *
+     * @return array<int,Row>
      */
     public function findMany(): array
     {
@@ -60,9 +74,12 @@ class PdoQueryExecuter
     }
 
     /**
+     * Prepare and execute PDOStatement from query string and array of
+     * parameters.
+     *
      * @param array<string,mixed> $queryParameters
      *
-     * @throws Exception
+     * @throws PDOException
      */
     protected function executeQuery(string $query, array $queryParameters): PDOStatement
     {
@@ -76,7 +93,9 @@ class PdoQueryExecuter
     }
 
     /**
-     * @return array<int,mixed>
+     * Fetch all rows in a result set as array of Row.
+     *
+     * @return array<int,Row>
      */
     protected function fetchAllRows(PDOStatement $statement): array
     {
@@ -90,6 +109,9 @@ class PdoQueryExecuter
         return $rows;
     }
 
+    /**
+     * Fetch next row from result set as Row.
+     */
     protected function fetchRow(PDOStatement $statement): Row|false
     {
         $row = $statement->fetch(PDO::FETCH_ASSOC);

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Conform\Pdo;
+namespace Tomrf\Conform;
 
 use DomainException;
 use InvalidArgumentException;
 
-class PdoQueryBuilder extends QueryBuilder
+class SqlQueryBuilder extends QueryBuilder
 {
     /**
      * @var array<int|string,array>

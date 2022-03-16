@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tomrf\Conform\Pdo;
+namespace Tomrf\Conform;
 
 class QueryBuilder
 {
