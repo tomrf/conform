@@ -72,7 +72,7 @@ class SqlConstructor
             );
 
             if ($key !== array_key_last($this->select)) {
-                $selectExpression .= ',';
+                $selectExpression .= ', ';
             }
         }
 
