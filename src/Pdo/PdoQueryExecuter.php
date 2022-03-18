@@ -7,6 +7,7 @@ namespace Tomrf\Conform\Pdo;
 use PDO;
 use PDOException;
 use PDOStatement;
+use Tomrf\Conform\Data\NullValue;
 use Tomrf\Conform\Data\Row;
 use Tomrf\Conform\Data\Value;
 use Tomrf\Conform\Interface\ConnectionInterface;
@@ -141,9 +142,15 @@ class PdoQueryExecuter implements QueryExecuterInterface
 
         $values = [];
 
+        var_dump($row);
+
         foreach ($row as $key => $value) {
             // @todo keep key/column name in Value .. or Row?
-            $values[$key] = new Value($value);
+            if (null === $value) {
+                $values[$key] = new NullValue();
+            } else {
+                $values[$key] = new Value($value);
+            }
         }
 
         return (false === $row) ? false : new Row($values);
