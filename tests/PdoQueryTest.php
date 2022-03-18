@@ -3,11 +3,14 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
+use Tomrf\Conform\Conform;
 use Tomrf\Conform\Data\Row;
-use Tomrf\Conform\Factory\Factory;
+use Tomrf\Conform\Factory\QueryBuilderFactory;
+use Tomrf\Conform\Factory\QueryExecuterFactory;
 use Tomrf\Conform\Pdo\PdoConnection;
 use Tomrf\Conform\Pdo\PdoConnectionCredentials;
 use Tomrf\Conform\Pdo\PdoQueryExecuter;
+use Tomrf\Conform\QueryBuilder;
 use Tomrf\Conform\SqlQueryBuilder;
 
 /**
@@ -16,37 +19,50 @@ use Tomrf\Conform\SqlQueryBuilder;
  */
 final class PdoQueryTest extends TestCase
 {
-    private static PdoConnection $connection;
+    private static Conform $conform;
 
     public static function setUpBeforeClass(): void
     {
-        self::$connection = new PdoConnection(
-            new PdoConnectionCredentials(
-                PdoConnectionCredentials::DSN('sqlite', ':memory:')
+        self::$conform = new Conform(
+            new PdoConnection(
+                new PdoConnectionCredentials(
+                    PdoConnectionCredentials::DSN('sqlite', ':memory:')
+                )
             ),
-            new Factory(SqlQueryBuilder::class),
-            new Factory(PdoQueryExecuter::class),
+            new QueryBuilderFactory(QueryBuilder::class),
+            new QueryExecuterFactory(PdoQueryExecuter::class),
         );
+
         $sql = file_get_contents('tests/sql/countries_schema.sql');
-        self::$connection->getPdo()->exec($sql);
+        $numRows = self::$conform->execute($sql)->getRowCount();
+
         $sql = file_get_contents('tests/sql/countries_data.sql');
-        self::$connection->getPdo()->exec($sql);
+        $numRows = self::$conform->execute($sql)->getRowCount();
+
+        var_dump($numRows);
     }
 
     public function test_connection_is_connected(): void
     {
-        static::assertTrue(self::$connection->isConnected());
+        static::assertTrue(
+            self::$conform->getConnection()->isConnected()
+        );
     }
 
     public function test_select_all_find_one_returns_instance_of_row(): void
     {
-        $row = $this->queryTestCountries()->select('*')->findOne();
+        $row = self::$conform->execute(
+            self::$conform->query()->selectFrom('countries')
+        )->findOne();
+
         static::assertInstanceOf(Row::class, $row);
     }
 
     public function test_select_all_find_many_returns_array_of_row(): void
     {
-        $rows = $this->queryTestCountries()->select('*')->findMany();
+        $rows = self::$conform->execute(
+            self::$conform->query()->selectFrom('countries')
+        )->findMany();
 
         static::assertIsArray($rows);
         static::assertContainsOnlyInstancesOf(Row::class, $rows);
@@ -54,7 +70,11 @@ final class PdoQueryTest extends TestCase
 
     public function test_select_find_many_limit_1_returns_array_of_one_row(): void
     {
-        $rows = $this->queryTestCountries()->limit(1)->findMany();
+        $rows = self::$conform->execute(
+            self::$conform->query()
+                ->selectFrom('countries')
+                ->limit(1)
+        )->findMany();
 
         static::assertIsArray($rows);
         static::assertCount(1, $rows);
@@ -64,7 +84,12 @@ final class PdoQueryTest extends TestCase
     public function test_unspecified_select_returns_all_columns(): void
     {
         $columns = ['id', 'phone', 'code', 'name', 'symbol', 'currency', 'continent', 'continent_code'];
-        $row = $this->queryTestCountries()->findOne();
+
+        $row = self::$conform->execute(
+            self::$conform->query()
+                ->selectFrom('countries')
+        )->findOne();
+
         foreach ($columns as $column) {
             static::assertArrayHasKey($column, $row);
         }
@@ -72,28 +97,43 @@ final class PdoQueryTest extends TestCase
 
     public function test_select_as(): void
     {
-        $row = $this->queryTestCountries()->selectAs('symbol', 'currency_symbol')->findOne();
+        $row = self::$conform->execute(
+            self::$conform->query()
+                ->selectFrom('countries')
+                ->selectAs('symbol', 'currency_symbol')
+        )->findOne();
+
         static::assertArrayHasKey('currency_symbol', $row);
     }
 
     public function test_select_raw(): void
     {
-        $row = $this->queryTestCountries()->selectRaw('COUNT()', 'RANDOM()', '"string"')->findOne();
-        static::assertSame((int) $row['COUNT()'], 252);
-        static::assertSame('string', $row['"string"']);
+        $row = self::$conform->execute(
+            self::$conform->query()
+                ->selectFrom('countries')
+                ->selectRaw('COUNT()', 'RANDOM()', '"string"')
+        )->findOne();
+
+        static::assertSame($row['COUNT()']->asInteger(), 252);
+        static::assertSame($row['"string"']->asString(), 'string');
         static::assertArrayHasKey('RANDOM()', $row);
     }
 
     public function test_select_raw_as(): void
     {
-        $row = $this->queryTestCountries()->selectRawAs('COUNT()', 'number_of_rows')->findOne();
+        $row = self::$conform->execute(
+            self::$conform->query()
+                ->selectFrom('countries')
+                ->selectRawAs('COUNT()', 'number_of_rows')
+        )->findOne();
+
         static::assertArrayHasKey('number_of_rows', $row);
-        static::assertSame('252', $row['number_of_rows']);
+        static::assertSame($row['number_of_rows']->asInteger(), 252);
     }
 
-    // helpers
-    private function queryTestCountries(): SqlQueryBuilder
-    {
-        return self::$connection->queryTable('countries');
-    }
+    // // helpers
+    // private function queryTestCountries(): SqlQueryBuilder
+    // {
+    //     return self::$connection->queryTable('countries');
+    // }
 }
