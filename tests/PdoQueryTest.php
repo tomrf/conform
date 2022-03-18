@@ -11,7 +11,6 @@ use Tomrf\Conform\Pdo\PdoConnection;
 use Tomrf\Conform\Pdo\PdoConnectionCredentials;
 use Tomrf\Conform\Pdo\PdoQueryExecuter;
 use Tomrf\Conform\QueryBuilder;
-use Tomrf\Conform\SqlQueryBuilder;
 
 /**
  * @internal
@@ -34,12 +33,10 @@ final class PdoQueryTest extends TestCase
         );
 
         $sql = file_get_contents('tests/sql/countries_schema.sql');
-        $numRows = self::$conform->execute($sql)->getRowCount();
+        self::$conform->execute($sql)->getRowCount();
 
         $sql = file_get_contents('tests/sql/countries_data.sql');
-        $numRows = self::$conform->execute($sql)->getRowCount();
-
-        var_dump($numRows);
+        self::$conform->execute($sql)->getRowCount();
     }
 
     public function test_connection_is_connected(): void
@@ -130,10 +127,4 @@ final class PdoQueryTest extends TestCase
         static::assertArrayHasKey('number_of_rows', $row);
         static::assertSame($row['number_of_rows']->asInteger(), 252);
     }
-
-    // // helpers
-    // private function queryTestCountries(): SqlQueryBuilder
-    // {
-    //     return self::$connection->queryTable('countries');
-    // }
 }
