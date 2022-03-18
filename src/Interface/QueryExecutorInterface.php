@@ -6,7 +6,7 @@ namespace Tomrf\Conform\Interface;
 
 use Tomrf\Conform\Data\Row;
 
-interface QueryExecuterInterface
+interface QueryExecutorInterface
 {
     public function getRowCount(): int;
 

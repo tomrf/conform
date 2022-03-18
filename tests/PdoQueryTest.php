@@ -6,10 +6,10 @@ use PHPUnit\Framework\TestCase;
 use Tomrf\Conform\Conform;
 use Tomrf\Conform\Data\Row;
 use Tomrf\Conform\Factory\QueryBuilderFactory;
-use Tomrf\Conform\Factory\QueryExecuterFactory;
+use Tomrf\Conform\Factory\QueryExecutorFactory;
 use Tomrf\Conform\Pdo\PdoConnection;
 use Tomrf\Conform\Pdo\PdoConnectionCredentials;
-use Tomrf\Conform\Pdo\PdoQueryExecuter;
+use Tomrf\Conform\Pdo\PdoQueryExecutor;
 use Tomrf\Conform\QueryBuilder;
 
 /**
@@ -29,7 +29,7 @@ final class PdoQueryTest extends TestCase
                 )
             ),
             new QueryBuilderFactory(QueryBuilder::class),
-            new QueryExecuterFactory(PdoQueryExecuter::class),
+            new QueryExecutorFactory(PdoQueryExecutor::class),
         );
 
         $sql = file_get_contents('tests/sql/countries_schema.sql');

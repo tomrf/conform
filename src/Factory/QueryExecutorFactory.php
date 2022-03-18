@@ -7,10 +7,10 @@ namespace Tomrf\Conform\Factory;
 use Tomrf\Conform\Data\Row;
 use Tomrf\Conform\Interface\ConnectionInterface;
 use Tomrf\Conform\Interface\QueryBuilderInterface;
-use Tomrf\Conform\Interface\QueryExecuterFactoryInterface;
-use Tomrf\Conform\Interface\QueryExecuterInterface;
+use Tomrf\Conform\Interface\QueryExecutorFactoryInterface;
+use Tomrf\Conform\Interface\QueryExecutorInterface;
 
-class QueryExecuterFactory extends Factory implements QueryExecuterFactoryInterface
+class QueryExecutorFactory extends Factory implements QueryExecutorFactoryInterface
 {
     protected ConnectionInterface $connection;
 
@@ -18,7 +18,7 @@ class QueryExecuterFactory extends Factory implements QueryExecuterFactoryInterf
         ConnectionInterface $connection,
         QueryBuilderInterface|string $query,
         array $parameters = []
-    ): QueryExecuterInterface {
+    ): QueryExecutorInterface {
         $this->connection = $connection;
 
         return ($this->make($connection))->execute(

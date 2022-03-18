@@ -1,6 +1,6 @@
 {
     "name": "tomrf/conform",
-    "description": "pdo sql query builder and executer",
+    "description": "pdo sql query builder and executor",
     "type": "library",
     "license": "MIT",
     "autoload": {

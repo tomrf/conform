@@ -6,7 +6,7 @@ namespace Tomrf\Conform\Interface;
 
 use Tomrf\Conform\Data\Row;
 
-interface QueryExecuterFactoryInterface extends FactoryInterface
+interface QueryExecutorFactoryInterface extends FactoryInterface
 {
     /**
      * @param array<int|string,mixed> $parameters
@@ -15,7 +15,7 @@ interface QueryExecuterFactoryInterface extends FactoryInterface
         ConnectionInterface $connection,
         QueryBuilderInterface|string $query,
         array $parameters = []
-    ): QueryExecuterInterface;
+    ): QueryExecutorInterface;
 
     public function findOne(): ?Row;
 

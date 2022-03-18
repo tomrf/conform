@@ -12,9 +12,9 @@ use Tomrf\Conform\Data\Row;
 use Tomrf\Conform\Data\Value;
 use Tomrf\Conform\Interface\ConnectionInterface;
 use Tomrf\Conform\Interface\QueryBuilderInterface;
-use Tomrf\Conform\Interface\QueryExecuterInterface;
+use Tomrf\Conform\Interface\QueryExecutorInterface;
 
-class PdoQueryExecuter implements QueryExecuterInterface
+class PdoQueryExecutor implements QueryExecutorInterface
 {
     protected PDOStatement $pdoStatement;
 

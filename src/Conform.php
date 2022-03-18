@@ -8,15 +8,15 @@ use Closure;
 use Tomrf\Conform\Interface\ConnectionInterface;
 use Tomrf\Conform\Interface\QueryBuilderFactoryInterface;
 use Tomrf\Conform\Interface\QueryBuilderInterface;
-use Tomrf\Conform\Interface\QueryExecuterFactoryInterface;
-use Tomrf\Conform\Interface\QueryExecuterInterface;
+use Tomrf\Conform\Interface\QueryExecutorFactoryInterface;
+use Tomrf\Conform\Interface\QueryExecutorInterface;
 
 class Conform
 {
     public function __construct(
         protected ConnectionInterface $connection,
         protected QueryBuilderFactoryInterface $queryBuilderFactory,
-        protected QueryExecuterFactoryInterface $queryExecutorFactory,
+        protected QueryExecutorFactoryInterface $queryExecutorFactory,
         protected ?Closure $callbackBeforeExecute = null,
         protected ?Closure $callbackAfterExecute = null
     ) {
@@ -41,7 +41,7 @@ class Conform
     public function execute(
         QueryBuilderInterface|string $query,
         array $parameters = []
-    ): QueryExecuterInterface {
+    ): QueryExecutorInterface {
         if (null !== $this->callbackBeforeExecute) {
             \call_user_func(
                 $this->callbackBeforeExecute,
@@ -51,7 +51,7 @@ class Conform
 
         $timestamp = microtime(true);
 
-        $queryExecuter = $this->queryExecutorFactory->execute(
+        $queryExecutor = $this->queryExecutorFactory->execute(
             $this->connection,
             $query,
             $parameters
@@ -61,11 +61,11 @@ class Conform
             \call_user_func(
                 $this->callbackAfterExecute,
                 $query,
-                $queryExecuter,
+                $queryExecutor,
                 (microtime(true) - $timestamp)
             );
         }
 
-        return $queryExecuter;
+        return $queryExecutor;
     }
 }
