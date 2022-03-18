@@ -18,6 +18,11 @@ interface ConnectionInterface
 
     public function getCredentials(): PdoConnectionCredentials;
 
+    /**
+     * Get PDO options array for this connections.
+     *
+     * @return null|array<int, int>
+     */
     public function getOptions(): ?array;
 
     public function isConnected(): bool;

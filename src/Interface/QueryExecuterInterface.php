@@ -17,5 +17,10 @@ interface QueryExecuterInterface
 
     public function findOne(): ?Row;
 
+    /**
+     * Fetch all rows from query result set.
+     *
+     * @return array<int,Row>
+     */
     public function findMany(): array;
 }

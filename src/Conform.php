@@ -22,7 +22,7 @@ class Conform
     /**
      * Return the active connection.
      */
-    public function getConnection()
+    public function getConnection(): ConnectionInterface
     {
         return $this->connection;
     }
@@ -35,6 +35,7 @@ class Conform
     public function execute(QueryBuilderInterface $queryBuilder): QueryExecuterInterface
     {
         return $this->queryExecutorFactory->execute(
+            $this->connection,
             $queryBuilder
         );
     }

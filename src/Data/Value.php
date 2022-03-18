@@ -76,4 +76,9 @@ class Value implements Stringable, Countable, Serializable
     {
         return is_numeric($this->data);
     }
+
+    public function isNull(): bool
+    {
+        return false;
+    }
 }

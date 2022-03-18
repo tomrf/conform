@@ -6,4 +6,8 @@ namespace Tomrf\Conform\Data;
 
 class NullValue
 {
+    public function isNull(): bool
+    {
+        return true;
+    }
 }

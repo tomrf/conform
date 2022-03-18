@@ -57,8 +57,6 @@ class PdoQueryExecuter implements QueryExecuterInterface
      * Prepare and execute PDOStatement from an instance of
      * QueryBuilderInterface.
      *
-     * @param array<string,mixed> $queryParameters
-     *
      * @throws PDOException
      */
     public function execute(QueryBuilderInterface $queryBuilder): static
@@ -140,19 +138,21 @@ class PdoQueryExecuter implements QueryExecuterInterface
     {
         $row = $statement->fetch(PDO::FETCH_ASSOC);
 
-        $values = [];
+        if (false === $row) {
+            return false;
+        }
 
-        var_dump($row);
+        $values = [];
 
         foreach ($row as $key => $value) {
             // @todo keep key/column name in Value .. or Row?
             if (null === $value) {
-                $values[$key] = new NullValue();
+                $values[(string) $key] = new NullValue();
             } else {
-                $values[$key] = new Value($value);
+                $values[(string) $key] = new Value($value);
             }
         }
 
-        return (false === $row) ? false : new Row($values);
+        return new Row($values);
     }
 }

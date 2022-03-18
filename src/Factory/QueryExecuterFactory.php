@@ -17,15 +17,15 @@ class QueryExecuterFactory implements QueryExecuterFactoryInterface
 
     public function __construct(
         string $class,
-        ConnectionInterface $connection
     ) {
         $this->class = $class;
-        $this->connection = $connection;
     }
 
-    public function execute(QueryBuilderInterface $queryBuilder): QueryExecuterInterface
+    public function execute(ConnectionInterface $connection, QueryBuilderInterface $queryBuilder): QueryExecuterInterface
     {
-        return ($this->make($this->connection))->execute(
+        $this->connection = $connection;
+
+        return ($this->make($connection))->execute(
             $queryBuilder
         );
     }
