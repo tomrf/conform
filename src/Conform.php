@@ -35,12 +35,14 @@ class Conform
         return $this->queryBuilderFactory;
     }
 
-    public function execute(QueryBuilderInterface $queryBuilder): QueryExecuterInterface
-    {
+    public function execute(
+        QueryBuilderInterface|string $query,
+        array $parameters = []
+    ): QueryExecuterInterface {
         if (null !== $this->callbackBeforeExecute) {
             \call_user_func(
                 $this->callbackBeforeExecute,
-                $queryBuilder
+                $query
             );
         }
 
@@ -48,13 +50,14 @@ class Conform
 
         $queryExecuter = $this->queryExecutorFactory->execute(
             $this->connection,
-            $queryBuilder
+            $query,
+            $parameters
         );
 
         if (null !== $this->callbackAfterExecute) {
             \call_user_func(
                 $this->callbackAfterExecute,
-                $queryBuilder,
+                $query,
                 $queryExecuter,
                 (microtime(true) - $timestamp)
             );

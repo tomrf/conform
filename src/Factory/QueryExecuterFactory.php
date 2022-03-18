@@ -14,12 +14,16 @@ class QueryExecuterFactory extends Factory implements QueryExecuterFactoryInterf
 {
     protected ConnectionInterface $connection;
 
-    public function execute(ConnectionInterface $connection, QueryBuilderInterface $queryBuilder): QueryExecuterInterface
-    {
+    public function execute(
+        ConnectionInterface $connection,
+        QueryBuilderInterface|string $query,
+        array $parameters = []
+    ): QueryExecuterInterface {
         $this->connection = $connection;
 
         return ($this->make($connection))->execute(
-            $queryBuilder
+            $query,
+            $parameters
         );
     }
 

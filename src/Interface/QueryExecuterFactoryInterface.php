@@ -8,7 +8,11 @@ use Tomrf\Conform\Data\Row;
 
 interface QueryExecuterFactoryInterface extends FactoryInterface
 {
-    public function execute(ConnectionInterface $connection, QueryBuilderInterface $queryBuilder): QueryExecuterInterface;
+    public function execute(
+        ConnectionInterface $connection,
+        QueryBuilderInterface|string $query,
+        array $parameters = []
+    ): QueryExecuterInterface;
 
     public function findOne(): ?Row;
 
