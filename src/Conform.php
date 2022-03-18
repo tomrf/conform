@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tomrf\Conform;
 
+use Closure;
 use Tomrf\Conform\Interface\ConnectionInterface;
 use Tomrf\Conform\Interface\QueryBuilderFactoryInterface;
 use Tomrf\Conform\Interface\QueryBuilderInterface;
@@ -16,6 +17,8 @@ class Conform
         protected ConnectionInterface $connection,
         protected QueryBuilderFactoryInterface $queryBuilderFactory,
         protected QueryExecuterFactoryInterface $queryExecutorFactory,
+        protected ?Closure $callbackBeforeExecute = null,
+        protected ?Closure $callbackAfterExecute = null
     ) {
     }
 
@@ -34,9 +37,29 @@ class Conform
 
     public function execute(QueryBuilderInterface $queryBuilder): QueryExecuterInterface
     {
-        return $this->queryExecutorFactory->execute(
+        if (null !== $this->callbackBeforeExecute) {
+            \call_user_func(
+                $this->callbackBeforeExecute,
+                $queryBuilder
+            );
+        }
+
+        $timestamp = microtime(true);
+
+        $queryExecuter = $this->queryExecutorFactory->execute(
             $this->connection,
             $queryBuilder
         );
+
+        if (null !== $this->callbackAfterExecute) {
+            \call_user_func(
+                $this->callbackAfterExecute,
+                $queryBuilder,
+                $queryExecuter,
+                (microtime(true) - $timestamp)
+            );
+        }
+
+        return $queryExecuter;
     }
 }

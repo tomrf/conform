@@ -10,16 +10,9 @@ use Tomrf\Conform\Interface\QueryBuilderInterface;
 use Tomrf\Conform\Interface\QueryExecuterFactoryInterface;
 use Tomrf\Conform\Interface\QueryExecuterInterface;
 
-class QueryExecuterFactory implements QueryExecuterFactoryInterface
+class QueryExecuterFactory extends Factory implements QueryExecuterFactoryInterface
 {
-    protected string $class;
     protected ConnectionInterface $connection;
-
-    public function __construct(
-        string $class,
-    ) {
-        $this->class = $class;
-    }
 
     public function execute(ConnectionInterface $connection, QueryBuilderInterface $queryBuilder): QueryExecuterInterface
     {
@@ -43,10 +36,5 @@ class QueryExecuterFactory implements QueryExecuterFactoryInterface
     public function findMany(): array
     {
         return ($this->make($this->connection))->findMany();
-    }
-
-    public function make(mixed ...$params): QueryExecuterInterface
-    {
-        return new $this->class(...$params);
     }
 }
