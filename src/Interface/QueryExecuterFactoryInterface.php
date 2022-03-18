@@ -8,6 +8,9 @@ use Tomrf\Conform\Data\Row;
 
 interface QueryExecuterFactoryInterface extends FactoryInterface
 {
+    /**
+     * @param array<int|string,mixed> $parameters
+     */
     public function execute(
         ConnectionInterface $connection,
         QueryBuilderInterface|string $query,

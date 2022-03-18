@@ -35,6 +35,9 @@ class Conform
         return $this->queryBuilderFactory;
     }
 
+    /**
+     * @param array<int|string,mixed> $parameters
+     */
     public function execute(
         QueryBuilderInterface|string $query,
         array $parameters = []

@@ -37,7 +37,7 @@ class SqlConstructor
      */
     protected array $set = [];
     /**
-     * @var array<string,mixed>
+     * @var array<int|string,mixed>
      */
     protected array $queryParameters = [];
 
@@ -49,7 +49,7 @@ class SqlConstructor
     }
 
     /**
-     * @return array<string,mixed>
+     * @return array<int|string,mixed>
      */
     public function getQueryParameters(): array
     {

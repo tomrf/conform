@@ -12,6 +12,9 @@ interface QueryExecuterInterface
 
     public function getLastInsertId(): string;
 
+    /**
+     * @param array<int|string,mixed> $parameters
+     */
     public function execute(QueryBuilderInterface|string $query, array $parameters = []): static;
 
     public function findOne(): ?Row;

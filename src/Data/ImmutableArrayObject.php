@@ -8,8 +8,7 @@ use ArrayObject;
 use OutOfBoundsException;
 
 /**
- * @ignore
- * @extends ArrayObject<string, string>
+ * @extends ArrayObject<string, mixed>
  */
 class ImmutableArrayObject extends ArrayObject
 {

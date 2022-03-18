@@ -106,7 +106,7 @@ class PdoQueryExecuter implements QueryExecuterInterface
      * Prepare and execute PDOStatement from query string and array of
      * parameters.
      *
-     * @param array<string,mixed> $queryParameters
+     * @param array<int|string,mixed> $queryParameters
      *
      * @throws PDOException
      */
