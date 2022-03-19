@@ -8,10 +8,6 @@ use Tomrf\Conform\Data\Row;
 
 interface QueryExecutorInterface
 {
-    public function getRowCount(): int;
-
-    public function getLastInsertId(): string|false;
-
     /**
      * @param array<int|string,mixed> $parameters
      */
@@ -23,4 +19,8 @@ interface QueryExecutorInterface
      * @return array<int,Row>
      */
     public function findMany(): array;
+
+    public function getRowCount(): int;
+
+    public function getLastInsertId(): string|false;
 }

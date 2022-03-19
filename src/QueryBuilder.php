@@ -6,6 +6,7 @@ namespace Tomrf\Conform;
 
 use InvalidArgumentException;
 use Tomrf\Conform\Interface\QueryBuilderInterface;
+use Tomrf\Conform\Sql\SqlConstructor;
 
 class QueryBuilder extends SqlConstructor implements QueryBuilderInterface
 {
