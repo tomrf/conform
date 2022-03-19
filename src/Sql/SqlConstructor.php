@@ -57,6 +57,10 @@ class SqlConstructor
      */
     public function getQueryParameters(): array
     {
+        if (0 === \count($this->queryParameters)) {
+            $this->compileQuery();
+        }
+
         return $this->queryParameters;
     }
 

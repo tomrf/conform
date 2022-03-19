@@ -44,7 +44,8 @@ class Conform
         if (null !== $this->callbackBeforeExecute) {
             \call_user_func(
                 $this->callbackBeforeExecute,
-                $query
+                $query,
+                $parameters
             );
         }
 
@@ -53,14 +54,17 @@ class Conform
         $queryExecutor = $this->queryExecutorFactory->make(
             $this->connection
         )->execute(
-            $query,
-            $parameters
+            (string) $query,
+            ($query instanceof QueryBuilderInterface
+                ? $query->getQueryParameters() : $parameters),
         );
 
         if (null !== $this->callbackAfterExecute) {
             \call_user_func(
                 $this->callbackAfterExecute,
-                $query,
+                (string) $query,
+                ($query instanceof QueryBuilderInterface
+                    ? $query->getQueryParameters() : $parameters),
                 $queryExecutor,
                 (microtime(true) - $timestamp)
             );
