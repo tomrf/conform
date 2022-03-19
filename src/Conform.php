@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tomrf\Conform;
 
-use Closure;
 use Tomrf\Conform\Factory\Factory;
 use Tomrf\Conform\Interface\QueryBuilderInterface;
 use Tomrf\Conform\Pdo\PdoConnection;
@@ -16,8 +15,6 @@ class Conform
         protected PdoConnection $connection,
         protected Factory $queryBuilderFactory,
         protected Factory $queryExecutorFactory,
-        protected ?Closure $callbackBeforeExecute = null,
-        protected ?Closure $callbackAfterExecute = null
     ) {
     }
 
@@ -41,35 +38,11 @@ class Conform
         QueryBuilderInterface|string $query,
         array $parameters = []
     ): PdoQueryExecutor {
-        if (null !== $this->callbackBeforeExecute) {
-            \call_user_func(
-                $this->callbackBeforeExecute,
-                $query,
-                $parameters
-            );
-        }
-
-        $timestamp = microtime(true);
-
-        $queryExecutor = $this->queryExecutorFactory->make(
+        return $this->queryExecutorFactory->make(
             $this->connection
         )->execute(
-            (string) $query,
-            ($query instanceof QueryBuilderInterface
-                ? $query->getQueryParameters() : $parameters),
+            $query,
+            $parameters,
         );
-
-        if (null !== $this->callbackAfterExecute) {
-            \call_user_func(
-                $this->callbackAfterExecute,
-                (string) $query,
-                ($query instanceof QueryBuilderInterface
-                    ? $query->getQueryParameters() : $parameters),
-                $queryExecutor,
-                (microtime(true) - $timestamp)
-            );
-        }
-
-        return $queryExecutor;
     }
 }
