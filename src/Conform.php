@@ -5,18 +5,17 @@ declare(strict_types=1);
 namespace Tomrf\Conform;
 
 use Closure;
+use Tomrf\Conform\Factory\Factory;
 use Tomrf\Conform\Interface\ConnectionInterface;
-use Tomrf\Conform\Interface\QueryBuilderFactoryInterface;
 use Tomrf\Conform\Interface\QueryBuilderInterface;
-use Tomrf\Conform\Interface\QueryExecutorFactoryInterface;
 use Tomrf\Conform\Interface\QueryExecutorInterface;
 
 class Conform
 {
     public function __construct(
         protected ConnectionInterface $connection,
-        protected QueryBuilderFactoryInterface $queryBuilderFactory,
-        protected QueryExecutorFactoryInterface $queryExecutorFactory,
+        protected Factory $queryBuilderFactory,
+        protected Factory $queryExecutorFactory,
         protected ?Closure $callbackBeforeExecute = null,
         protected ?Closure $callbackAfterExecute = null
     ) {
@@ -30,9 +29,9 @@ class Conform
         return $this->connection;
     }
 
-    public function query(): QueryBuilderFactoryInterface
+    public function query(): QueryBuilderInterface
     {
-        return $this->queryBuilderFactory;
+        return $this->queryBuilderFactory->make();
     }
 
     /**
@@ -51,8 +50,9 @@ class Conform
 
         $timestamp = microtime(true);
 
-        $queryExecutor = $this->queryExecutorFactory->execute(
-            $this->connection,
+        $queryExecutor = $this->queryExecutorFactory->make(
+            $this->connection
+        )->execute(
             $query,
             $parameters
         );

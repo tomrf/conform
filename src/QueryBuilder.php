@@ -9,10 +9,39 @@ use Tomrf\Conform\Interface\QueryBuilderInterface;
 
 class QueryBuilder extends SqlConstructor implements QueryBuilderInterface
 {
-    public function __construct(
-        protected string $table,
-        protected string $statement,
-    ) {
+    protected string $table = '';
+    protected string $statement = '';
+
+    public function selectFrom(string $table): static
+    {
+        $this->setTable($table);
+        $this->setStatement('SELECT');
+
+        return $this;
+    }
+
+    public function insertInto(string $table): static
+    {
+        $this->setTable($table);
+        $this->setStatement('INSERT INTO');
+
+        return $this;
+    }
+
+    public function update(string $table): static
+    {
+        $this->setTable($table);
+        $this->setStatement('UPDATE');
+
+        return $this;
+    }
+
+    public function deleteFrom(string $table): static
+    {
+        $this->setTable($table);
+        $this->setStatement('DELETE FROM');
+
+        return $this;
     }
 
     public function set(string $column, mixed $value): static

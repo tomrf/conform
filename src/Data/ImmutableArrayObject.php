@@ -38,8 +38,8 @@ class ImmutableArrayObject extends ArrayObject
 
     public function offsetGet(mixed $key): mixed
     {
-        if ($this->offsetExists($key)) {
-            return parent::offsetGet($key);
+        if ($this->offsetExists((string) $key)) {
+            return parent::offsetGet((string) $key);
         }
 
         $this->accessViolation('getting non-existing key from');
@@ -49,7 +49,7 @@ class ImmutableArrayObject extends ArrayObject
 
     public function offsetExists(mixed $key): bool
     {
-        return parent::offsetExists($key);
+        return parent::offsetExists((string) $key);
     }
 
     protected function accessViolation(

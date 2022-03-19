@@ -17,23 +17,27 @@ class SqlConstructor
     protected ?string $onDuplicateKey = null;
 
     /**
-     * @var array<int|string,array>
+     * @var array<int|string,mixed>
      */
     protected array $select = [];
+
     /**
-     * @var array<int|string,array>
+     * @var array<int|string,mixed>
      */
     protected array $join = [];
+
     /**
-     * @var array<int|string,array>
+     * @var array<int|string,mixed>
      */
     protected array $where = [];
+
     /**
-     * @var array<int|string,array>
+     * @var array<int|string,mixed>
      */
     protected array $order = [];
+
     /**
-     * @var array<int|string,array>
+     * @var array<int|string,mixed>
      */
     protected array $set = [];
     /**

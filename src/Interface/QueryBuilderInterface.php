@@ -6,6 +6,14 @@ namespace Tomrf\Conform\Interface;
 
 interface QueryBuilderInterface
 {
+    public function selectFrom(string $table): static;
+
+    public function insertInto(string $table): static;
+
+    public function update(string $table): static;
+
+    public function deleteFrom(string $table): static;
+
     public function set(string $column, mixed $value): static;
 
     public function setRaw(string $column, string $expression): static;

@@ -10,7 +10,6 @@ use PDOStatement;
 use Tomrf\Conform\Data\NullValue;
 use Tomrf\Conform\Data\Row;
 use Tomrf\Conform\Data\Value;
-use Tomrf\Conform\Interface\ConnectionInterface;
 use Tomrf\Conform\Interface\QueryBuilderInterface;
 use Tomrf\Conform\Interface\QueryExecutorInterface;
 
@@ -19,7 +18,7 @@ class PdoQueryExecutor implements QueryExecutorInterface
     protected PDOStatement $pdoStatement;
 
     public function __construct(
-        protected ConnectionInterface $connection
+        protected PdoConnection $connection
     ) {
     }
 
@@ -34,24 +33,10 @@ class PdoQueryExecutor implements QueryExecutorInterface
     /**
      * Returns the last inserted row ID as string.
      */
-    public function getLastInsertId(): string
+    public function getLastInsertId(): string|false
     {
         return $this->connection->getPdo()->lastInsertId();
     }
-
-    // /**
-    //  * Prepare and execute PDOStatement from query string and array of
-    //  * parameters.
-    //  *
-    //  * @param array<string,mixed> $queryParameters
-    //  *
-    //  * @throws PDOException
-    //  */
-    // public function execute(string $query, array $queryParameters): static
-    // {
-    //     $this->pdoStatement = $this->executeQuery($query, $queryParameters);
-    //     return $this;
-    // }
 
     /**
      * Prepare and execute PDOStatement from an instance of
@@ -152,7 +137,6 @@ class PdoQueryExecutor implements QueryExecutorInterface
         $values = [];
 
         foreach ($row as $key => $value) {
-            // @todo keep key/column name in Value .. or Row?
             if (null === $value) {
                 $values[(string) $key] = new NullValue();
             } else {

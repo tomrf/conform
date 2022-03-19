@@ -10,7 +10,7 @@ interface QueryExecutorInterface
 {
     public function getRowCount(): int;
 
-    public function getLastInsertId(): string;
+    public function getLastInsertId(): string|false;
 
     /**
      * @param array<int|string,mixed> $parameters

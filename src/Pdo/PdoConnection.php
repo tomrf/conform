@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tomrf\Conform\Pdo;
 
 use PDO;
-use PDOStatement;
 use RuntimeException;
 use Tomrf\Conform\Interface\ConnectionInterface;
 
@@ -18,30 +17,15 @@ class PdoConnection implements ConnectionInterface
      * @param null|array<int,int> $options
      */
     public function __construct(
-        protected PdoConnectionCredentials $credentials,
+        protected string $dsn,
+        protected ?string $username = null,
+        protected ?string $password = null,
         protected ?array $options = [
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         ]
     ) {
         $this->connect();
-    }
-
-    /**
-     * Execute SQL statement via PDO exec() and return number of rows affected.
-     */
-    public function exec(string $statement): int|false
-    {
-        return $this->pdo->exec($statement);
-    }
-
-    /**
-     * Execute statement via PDO query(), returning a result set as
-     * PDOStatement.
-     */
-    public function query(string $statement): PDOStatement|false
-    {
-        return $this->pdo->query($statement);
     }
 
     /**
@@ -53,15 +37,7 @@ class PdoConnection implements ConnectionInterface
     }
 
     /**
-     * Get the PdoConnectionCredentials for this connection.
-     */
-    public function getCredentials(): PdoConnectionCredentials
-    {
-        return $this->credentials;
-    }
-
-    /**
-     * Get PDO options array for this connections.
+     * Get PDO options array for this connection.
      *
      * @return null|array<int, int>
      */
@@ -79,6 +55,48 @@ class PdoConnection implements ConnectionInterface
     }
 
     /**
+     * Get the value of dsn.
+     */
+    public function getDsn(): string
+    {
+        return $this->dsn;
+    }
+
+    /**
+     * Get the value of username.
+     */
+    public function getUsername(): ?string
+    {
+        return $this->username;
+    }
+
+    /**
+     * Static helper function to build DSN string for PDO.
+     */
+    public static function DSN(
+        string $driver,
+        string $dbname,
+        string $host = null,
+        int $port = 3306,
+        string $charset = 'utf8mb4'
+    ): string {
+        if ('sqlite' === mb_strtolower($driver)) {
+            $dsn = sprintf('%s:%s', $driver, $dbname);
+        } else {
+            $dsn = sprintf(
+                '%s:host=%s;dbname=%s;port=%d;charset=%s',
+                $driver,
+                $host,
+                $dbname,
+                $port,
+                $charset
+            );
+        }
+
+        return $dsn;
+    }
+
+    /**
      * Connect to the database.
      *
      * @throws RuntimeException
@@ -87,9 +105,9 @@ class PdoConnection implements ConnectionInterface
     {
         try {
             $this->pdo = new PDO(
-                $this->credentials->getDsn(),
-                $this->credentials->getUsername(),
-                $this->credentials->getPassword(),
+                $this->dsn,
+                $this->username,
+                $this->password,
                 $this->options
             );
         } catch (\PDOException $exception) {
@@ -99,5 +117,6 @@ class PdoConnection implements ConnectionInterface
         }
 
         $this->isConnected = true;
+        $this->password = null;
     }
 }

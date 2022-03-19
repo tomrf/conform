@@ -5,10 +5,8 @@ declare(strict_types=1);
 use PHPUnit\Framework\TestCase;
 use Tomrf\Conform\Conform;
 use Tomrf\Conform\Data\Row;
-use Tomrf\Conform\Factory\QueryBuilderFactory;
-use Tomrf\Conform\Factory\QueryExecutorFactory;
+use Tomrf\Conform\Factory\Factory;
 use Tomrf\Conform\Pdo\PdoConnection;
-use Tomrf\Conform\Pdo\PdoConnectionCredentials;
 use Tomrf\Conform\Pdo\PdoQueryExecutor;
 use Tomrf\Conform\QueryBuilder;
 
@@ -24,12 +22,10 @@ final class PdoQueryTest extends TestCase
     {
         self::$conform = new Conform(
             new PdoConnection(
-                new PdoConnectionCredentials(
-                    PdoConnectionCredentials::DSN('sqlite', ':memory:')
-                )
+                PdoConnection::DSN('sqlite', ':memory:')
             ),
-            new QueryBuilderFactory(QueryBuilder::class),
-            new QueryExecutorFactory(PdoQueryExecutor::class),
+            new Factory(QueryBuilder::class),
+            new Factory(PdoQueryExecutor::class),
         );
 
         $sql = file_get_contents('tests/sql/countries_schema.sql');
