@@ -8,6 +8,9 @@ use Tomrf\Conform\Interface\FactoryInterface;
 
 class Factory implements FactoryInterface
 {
+    /**
+     * @param class-string $class
+     */
     public function __construct(
         protected string $class
     ) {

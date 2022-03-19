@@ -13,6 +13,11 @@ class QueryBuilder extends SqlConstructor implements QueryBuilderInterface
     protected string $table = '';
     protected string $statement = '';
 
+    public function __toString(): string
+    {
+        return $this->getQuery();
+    }
+
     public function selectFrom(string $table): static
     {
         $this->setTable($table);

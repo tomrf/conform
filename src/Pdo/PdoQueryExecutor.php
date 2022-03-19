@@ -53,12 +53,14 @@ class PdoQueryExecutor implements QueryExecutorInterface
                 $query->getQuery(),
                 $query->getQueryParameters()
             );
-        } else {
-            $this->pdoStatement = $this->executeQuery(
-                $query,
-                $parameters
-            );
+
+            return $this;
         }
+
+        $this->pdoStatement = $this->executeQuery(
+            $query,
+            $parameters
+        );
 
         return $this;
     }
@@ -68,8 +70,6 @@ class PdoQueryExecutor implements QueryExecutorInterface
      */
     public function findOne(): ?Row
     {
-        // $this->then__execute($this);
-
         $row = $this->fetchRow($this->pdoStatement);
 
         if (false === $row) {
