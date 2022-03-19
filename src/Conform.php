@@ -6,14 +6,14 @@ namespace Tomrf\Conform;
 
 use Closure;
 use Tomrf\Conform\Factory\Factory;
-use Tomrf\Conform\Interface\ConnectionInterface;
 use Tomrf\Conform\Interface\QueryBuilderInterface;
-use Tomrf\Conform\Interface\QueryExecutorInterface;
+use Tomrf\Conform\Pdo\PdoConnection;
+use Tomrf\Conform\Pdo\PdoQueryExecutor;
 
 class Conform
 {
     public function __construct(
-        protected ConnectionInterface $connection,
+        protected PdoConnection $connection,
         protected Factory $queryBuilderFactory,
         protected Factory $queryExecutorFactory,
         protected ?Closure $callbackBeforeExecute = null,
@@ -24,12 +24,12 @@ class Conform
     /**
      * Return the active connection.
      */
-    public function getConnection(): ConnectionInterface
+    public function getConnection(): PdoConnection
     {
         return $this->connection;
     }
 
-    public function query(): QueryBuilderInterface
+    public function query(): QueryBuilder
     {
         return $this->queryBuilderFactory->make();
     }
@@ -40,7 +40,7 @@ class Conform
     public function execute(
         QueryBuilderInterface|string $query,
         array $parameters = []
-    ): QueryExecutorInterface {
+    ): PdoQueryExecutor {
         if (null !== $this->callbackBeforeExecute) {
             \call_user_func(
                 $this->callbackBeforeExecute,

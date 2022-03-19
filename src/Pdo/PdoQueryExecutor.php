@@ -44,8 +44,10 @@ class PdoQueryExecutor implements QueryExecutorInterface
      *
      * @throws PDOException
      */
-    public function execute(QueryBuilderInterface|string $query, array $parameters = []): static
-    {
+    public function execute(
+        QueryBuilderInterface|string $query,
+        array $parameters = []
+    ): static {
         if ($query instanceof QueryBuilderInterface) {
             $this->pdoStatement = $this->executeQuery(
                 $query->getQuery(),
