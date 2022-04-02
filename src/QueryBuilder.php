@@ -245,11 +245,9 @@ class QueryBuilder extends SqlConstructor implements QueryBuilderInterface
         return $this;
     }
 
-    protected function setTable(string $table): static
+    protected function setTable(string $table): void
     {
         $this->table = $table;
-
-        return $this;
     }
 
     protected function setStatement(string $type): void
