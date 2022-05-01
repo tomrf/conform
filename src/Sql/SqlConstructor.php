@@ -40,6 +40,7 @@ class SqlConstructor
      * @var array<int|string,mixed>
      */
     protected array $set = [];
+
     /**
      * @var array<int|string,mixed>
      */
