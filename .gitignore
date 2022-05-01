@@ -1,6 +1,4 @@
 vendor/
-.phpunit.cache/
-.phpdoc/
-.history/
+*.cache
 test.php
 todo.txt

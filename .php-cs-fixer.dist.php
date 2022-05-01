@@ -2,11 +2,7 @@
 
 declare(strict_types=1);
 
-$finder = PhpCsFixer\Finder::create()
-    ->exclude('vendor')
-    ->exclude('tests')
-    ->in(__DIR__)
-;
+$finder = PhpCsFixer\Finder::create()->in('src/');
 
 $config = new PhpCsFixer\Config();
 
@@ -20,6 +16,4 @@ return $config->setRules([
     'mb_str_functions' => true,
     'phpdoc_no_package' => false,
     'php_unit_method_casing' => ['case' => 'snake_case'],
-])
-    ->setFinder($finder)
-;
+])->setFinder($finder);
