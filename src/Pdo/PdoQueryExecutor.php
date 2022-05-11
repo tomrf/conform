@@ -100,6 +100,12 @@ class PdoQueryExecutor implements QueryExecutorInterface
      */
     protected function executeQuery(string $query, array $queryParameters): PDOStatement
     {
+        if (true !== $this->connection->isConnected()) {
+            throw new RuntimeException(
+                'Unable to execute query - not connected to database'
+            );
+        }
+
         $statement = $this->connection->getPdo()?->prepare(
             $query
         );
