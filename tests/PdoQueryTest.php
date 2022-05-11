@@ -61,7 +61,7 @@ final class PdoQueryTest extends TestCase
         static::assertContainsOnlyInstancesOf(Row::class, $rows);
     }
 
-    public function test_select_find_many_limit_1_returns_array_of_one_row(): void
+    public function test_select_find_many_limit1_returns_array_of_one_row(): void
     {
         $rows = self::$conform->execute(
             self::$conform->query()
@@ -122,5 +122,69 @@ final class PdoQueryTest extends TestCase
 
         static::assertArrayHasKey('number_of_rows', $row);
         static::assertSame($row['number_of_rows']->asInteger(), 252);
+    }
+
+    public function test_querybuilder_sql_statement_syntax__select(): void
+    {
+        $queryBuilder = new QueryBuilder();
+        static::assertSame(
+            'SELECT `user`.* FROM `user`',
+            $queryBuilder
+                ->selectFrom('user')
+                ->getQuery()
+        );
+        static::assertSame(
+            'SELECT `id`, `username`, `email` FROM `user`',
+            $queryBuilder
+                ->selectFrom('user')
+                ->select('id', 'username', 'email')
+                ->getQuery()
+        );
+        static::assertSame(
+            'SELECT `id`, `username`, `email`, `id`, NOW(), COUNT(id) AS '.
+            '"user_count", MAX(id) AS "max_user_id" FROM `user`',
+            $queryBuilder
+                ->selectFrom('user')
+                ->select('id')
+                ->selectRaw('NOW()')
+                ->selectRawAs('COUNT(id)', 'user_count')
+                ->selectRawAs('MAX(id)', 'max_user_id')
+                ->getQuery()
+        );
+        static::assertSame(
+            'SELECT `id`, `username`, `email`, `id`, NOW(), COUNT(id) AS '.
+            '"user_count", MAX(id) AS "max_user_id", `id`, `username`, `email`,'.
+            ' `created_at` FROM `user` WHERE `id` != ? AND `username` IS NOT '.
+            'NULL AND `email` = ? LIMIT 5 OFFSET 1',
+            $queryBuilder
+                ->selectFrom('user')
+                ->select('id', 'username', 'email', 'created_at')
+                ->whereNotEqual('id', 500)
+                ->whereNotNull('username')
+                ->whereEqual('email', 'mail@examle.com')
+                ->limit(5)
+                ->offset(1)
+                ->getQuery()
+        );
+    }
+
+    public function test_querybuilder_sql_statement_syntax__update(): void
+    {
+        $queryBuilder = new QueryBuilder();
+        $queryBuilder = $queryBuilder
+            ->update('table')
+            ->set('column', 'value')
+            ->set('column2', 'value2')
+            ->setRaw('column3', 'RAW_EXPRESSION')
+            ->whereEqual('id', 1000)
+        ;
+        static::assertSame(
+            'UPDATE `table` SET `column` = ?, `column2` = ?, `column3` = RAW_EXPRESSION WHERE `id` = ?',
+            $queryBuilder->getQuery()
+        );
+        static::assertSame(
+            ['value', 'value2', 1000],
+            $queryBuilder->getQueryParameters()
+        );
     }
 }
