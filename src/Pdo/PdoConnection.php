@@ -62,7 +62,7 @@ class PdoConnection implements ConnectionInterface
      */
     public function getDsn(): string
     {
-        return $this->dsn;
+        return \is_string($this->dsnOrPdo) ? $this->dsnOrPdo : '';
     }
 
     /**
@@ -106,13 +106,13 @@ class PdoConnection implements ConnectionInterface
      */
     public function connect(): void
     {
-        if (null !== $this->pdo) {
+        if (null !== $this->pdo || \is_object($this->dsnOrPdo)) {
             return;
         }
 
         try {
             $this->pdo = new PDO(
-                $this->dsn,
+                $this->dsnOrPdo,
                 $this->username,
                 $this->password,
                 $this->options
