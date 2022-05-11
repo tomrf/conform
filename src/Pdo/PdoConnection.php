@@ -11,13 +11,13 @@ use Tomrf\Conform\Interface\ConnectionInterface;
 class PdoConnection implements ConnectionInterface
 {
     protected ?PDO $pdo = null;
-    protected bool $isConnected = false;
 
     /**
-     * @param null|array<int,int> $options
+     * @param PDO|string          $dsnOrPdo DSN string or an existing PDO object
+     * @param null|array<int,int> $options  PDO options array
      */
     public function __construct(
-        protected string $dsn,
+        protected string|PDO $dsnOrPdo,
         protected ?string $username = null,
         protected ?string $password = null,
         protected ?array $options = [
