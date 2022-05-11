@@ -22,7 +22,7 @@
     },
     "scripts": {
         "cs-fixer": [
-            "php-cs-fixer fix --diff --verbose --allow-risky=yes src"
+            "php-cs-fixer fix --diff --verbose --allow-risky=yes"
         ],
         "phpstan": [
             "phpstan analyze --level 8 src"
