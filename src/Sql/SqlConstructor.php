@@ -71,11 +71,10 @@ class SqlConstructor
             return sprintf('%s.*', $this->quoteExpression($this->table));
         }
 
-        $selectExpression = '';
-
         foreach ($this->select as $key => $select) {
-            $selectExpression .= sprintf(
-                '%s%s',
+            $selectExpression = sprintf(
+                '%s%s%s',
+                $selectExpression ?? '',
                 $select['expression'],
                 isset($select['alias']) ? (' AS '.$select['alias']) : ''
             );

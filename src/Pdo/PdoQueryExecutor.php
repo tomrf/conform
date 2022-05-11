@@ -7,6 +7,7 @@ namespace Tomrf\Conform\Pdo;
 use PDO;
 use PDOException;
 use PDOStatement;
+use RuntimeException;
 use Tomrf\Conform\Data\NullValue;
 use Tomrf\Conform\Data\Row;
 use Tomrf\Conform\Data\Value;
@@ -35,7 +36,7 @@ class PdoQueryExecutor implements QueryExecutorInterface
      */
     public function getLastInsertId(): string|false
     {
-        return $this->connection->getPdo()->lastInsertId();
+        return $this->connection->getPdo()?->lastInsertId() ?? false;
     }
 
     /**
@@ -99,11 +100,17 @@ class PdoQueryExecutor implements QueryExecutorInterface
      */
     protected function executeQuery(string $query, array $queryParameters): PDOStatement
     {
-        $statement = $this->connection->getPdo()->prepare(
+        $statement = $this->connection->getPdo()?->prepare(
             $query
         );
 
-        $statement->execute($queryParameters);
+        if ($statement instanceof PDOStatement) {
+            $statement->execute($queryParameters);
+        } else {
+            throw new RuntimeException(
+                'Could not get prepared statement, connection error?'
+            );
+        }
 
         return $statement;
     }

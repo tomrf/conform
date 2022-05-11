@@ -10,7 +10,7 @@ use Tomrf\Conform\Interface\ConnectionInterface;
 
 class PdoConnection implements ConnectionInterface
 {
-    protected PDO $pdo;
+    protected ?PDO $pdo = null;
     protected bool $isConnected = false;
 
     /**
@@ -23,15 +23,18 @@ class PdoConnection implements ConnectionInterface
         protected ?array $options = [
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        ]
+        ],
+        bool $connectImmediately = true,
     ) {
-        $this->connect();
+        if (true === $connectImmediately) {
+            $this->connect();
+        }
     }
 
     /**
      * Get the PDO resource object for this connection.
      */
-    public function getPdo(): PDO
+    public function getPdo(): ?PDO
     {
         return $this->pdo;
     }
@@ -51,7 +54,7 @@ class PdoConnection implements ConnectionInterface
      */
     public function isConnected(): bool
     {
-        return $this->isConnected;
+        return (null === $this->pdo) ? false : true;
     }
 
     /**
@@ -97,12 +100,16 @@ class PdoConnection implements ConnectionInterface
     }
 
     /**
-     * Connect to the database.
+     * Connect to the database if not already connected.
      *
      * @throws RuntimeException
      */
-    protected function connect(): void
+    public function connect(): void
     {
+        if (null !== $this->pdo) {
+            return;
+        }
+
         try {
             $this->pdo = new PDO(
                 $this->dsn,
@@ -116,7 +123,15 @@ class PdoConnection implements ConnectionInterface
             );
         }
 
-        $this->isConnected = true;
         $this->password = null;
+    }
+
+    public function disconnect(): void
+    {
+        if (null === $this->pdo) {
+            return;
+        }
+
+        $this->pdo = null;
     }
 }
