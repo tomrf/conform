@@ -6,7 +6,7 @@ namespace Tomrf\Conform\Sql;
 
 use DomainException;
 
-class SqlConstructor
+class SqlQueryCompiler
 {
     protected string $table;
     protected string $statement;

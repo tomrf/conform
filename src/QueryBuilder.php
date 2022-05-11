@@ -6,9 +6,9 @@ namespace Tomrf\Conform;
 
 use InvalidArgumentException;
 use Tomrf\Conform\Interface\QueryBuilderInterface;
-use Tomrf\Conform\Sql\SqlConstructor;
+use Tomrf\Conform\Sql\SqlQueryCompiler;
 
-class QueryBuilder extends SqlConstructor implements QueryBuilderInterface
+class QueryBuilder extends SqlQueryCompiler implements QueryBuilderInterface
 {
     protected string $table = '';
     protected string $statement = '';
